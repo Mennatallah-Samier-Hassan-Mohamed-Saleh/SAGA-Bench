@@ -41,7 +41,7 @@ int main(int argc, char* argv[])
     NodeID lastAssignedNodeID = -1;
     MapTable VMAP;
 
-    while (true) {        
+    while (!file.eof()) {        
         EdgeList el = readBatchFromCSV(
 	    file,
 	    opts.batch_size,
@@ -50,11 +50,8 @@ int main(int argc, char* argv[])
 	    VMAP,
 	    lastAssignedNodeID);
         if (el.empty()) {
-            // no more edges to read
             break;
         }
-
-        //std::cout << "Read batch " << batch_id << " with size " << el.size() << std::endl;
 	q_lock.lock();     
         queue.push(el);
 	q_lock.unlock();
