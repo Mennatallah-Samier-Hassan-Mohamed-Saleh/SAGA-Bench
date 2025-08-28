@@ -17,6 +17,6 @@ rm Alg.csv
 module purge
 module load gcc cmake perl python libGl libx11 fontconfig mesa
 
-cd /scratch/ms13779/Masters_thesis/Thesis/SAGA-Bench
+cd $SCRATCH/Masters_thesis/Thesis/SAGA-Bench
 
-./frontEnd -d 1 -w 0 -f /home/ms13779/datasets/SAGAdatasets/wiki-topcats.shuffle.t.w.csv -b 500000 -s degAwareRHH -n 1791489 -a bfsdyn -t 128 | tee -a original.log
+./frontEnd -d 1 -w 0 -f $SCRATCH/datasets/SAGAdatasets/wiki-topcats.shuffle.t.w.csv -b 500000 -s degAwareRHH -n 1791489 -a bfsdyn -t 128 | tee -a original.log
