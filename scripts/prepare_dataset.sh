@@ -30,7 +30,7 @@ for dataset in "${DATASETS[@]}"; do
     bash ${sagaDir}/inputResource/shuffle.sh $dataDir/${dataset}.txt /scratch/ms13779/sortdump
     echo "Adding weights(maximum weight of 1) and timestamps to the dataset: ${dataset}.txt"  
     cd   ${sagaDir}/inputResource/
-    bash ./addWeightAndTime.sh ${dataDir}/${dataset}.txt 3 1
+    bash ./addWeightAndTime.sh ${dataDir}/${dataset}.shuffle.txt 3 1
     echo " "
 done
 echo "All datasets have been processed successfully!"
