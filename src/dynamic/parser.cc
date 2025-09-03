@@ -44,6 +44,7 @@ void printUsage()
 	      << "First four arguments required\n"
 	      << "-f filename       should end in .csv\n"
 	      << "-b batchSize      suggestion = 100K\n"
+		  << "-i initial_batchSize      optional initial batch size for scalability tests\n"
 	      << "-w weighted       0=unweighted   1=weighted\n"
 	      << "-d directed       0=undirected   1=directed\n"
 	      << "-s dataStructure  data structure to use (default: adList)\n"
@@ -77,7 +78,7 @@ cmd_args parse(int argc, char *argv[])
 {
     cmd_args args;
     int opt = 0;
-    while(-1 != (opt = getopt(argc, argv, "f:b:w:d:s:n:a:t:h"))) {
+    while(-1 != (opt = getopt(argc, argv, "f:b:w:d:s:n:a:t:i:h"))) {
         switch(opt) {
 	case 'f':               
 	    if (getSuffix(optarg) != ".csv") {
@@ -136,6 +137,9 @@ cmd_args parse(int argc, char *argv[])
 		printUsage();
 		exit(-1);
 	    }
+	    break;
+	case 'i':
+	    args.initial_batch_size = atoi(optarg);	    
 	    break;
 	case 'h':
 	    std::cout << "Printing help" << std::endl;

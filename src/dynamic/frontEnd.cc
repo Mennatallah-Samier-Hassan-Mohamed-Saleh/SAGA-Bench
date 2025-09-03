@@ -41,10 +41,11 @@ int main(int argc, char* argv[])
     NodeID lastAssignedNodeID = -1;
     MapTable VMAP;
 
+    int64_t start_batch_size = (opts.initial_batch_size!= 0) ? opts.initial_batch_size : opts.batch_size;
     while (!file.eof()) {        
         EdgeList el = readBatchFromCSV(
 	    file,
-	    opts.batch_size,
+	    start_batch_size,
 	    batch_id,
 	    opts.weighted,
 	    VMAP,
@@ -55,7 +56,8 @@ int main(int argc, char* argv[])
 	q_lock.lock();     
         queue.push(el);
 	q_lock.unlock();
-	batch_id++;          
+	batch_id++;  
+    start_batch_size = opts.batch_size;        
     }
     file.close();
 

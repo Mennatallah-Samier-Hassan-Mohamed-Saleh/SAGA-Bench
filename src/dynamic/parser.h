@@ -13,6 +13,7 @@ struct cmd_args {
     std::string algorithm = "traverse";
     int8_t flags = 0;
     int64_t num_threads = 16; // default
+    int64_t initial_batch_size = 0; // Optional field for initial batch size for scalability tests.
 };
 
 std::string getSuffix(std::string filename);
