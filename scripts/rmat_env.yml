@@ -1,0 +1,32 @@
+name: rmat_setup
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - _libgcc_mutex=0.1=conda_forge
+  - _openmp_mutex=4.5=2_gnu
+  - ca-certificates=2025.8.3=hbd8a1cb_0
+  - certifi=2019.11.28=py27h8c360ce_1
+  - ld_impl_linux-64=2.44=h1423503_1
+  - libffi=3.2.1=he1b5a44_1007
+  - libgcc=15.1.0=h767d61c_4
+  - libgcc-ng=15.1.0=h69a702a_4
+  - libgomp=15.1.0=h767d61c_4
+  - libsqlite=3.46.0=hde9e2c9_0
+  - libstdcxx=15.1.0=h8f9b012_4
+  - libstdcxx-ng=15.1.0=h4852527_4
+  - libzlib=1.2.13=h4ab18f5_6
+  - ncurses=6.5=h2d0b736_3
+  - openssl=1.1.1w=hd590300_0
+  - pip=20.1.1=pyh9f0ad1d_0
+  - python=2.7.15=h5a48372_1011_cpython
+  - python-snap=4.0.0=py27h470a237_0
+  - python_abi=2.7=1_cp27mu
+  - readline=8.2=h8c095d6_2
+  - setuptools=44.0.0=py27_0
+  - sqlite=3.46.0=h6d4b2fc_0
+  - tk=8.6.13=noxft_h4845f30_101
+  - wheel=0.37.1=pyhd8ed1ab_0
+  - zlib=1.2.13=h4ab18f5_6
+prefix: /home/ms13779/conda-envs/rmat_setup
