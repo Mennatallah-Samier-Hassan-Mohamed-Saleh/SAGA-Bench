@@ -169,7 +169,7 @@ void darhh<T>::update(EdgeList const &el)
     std::vector<std::unique_ptr<std::thread>> dqs;
 
     //#######............. thread pinning.............#########
-    int64_t count = 2;
+    int64_t count = 0;
     //std::cout << "IN" << std::endl;
     for(auto& ptr: in){        
 	//std::cout << "Count: " << count << " Cpu: " << count + 2 << std::endl;
