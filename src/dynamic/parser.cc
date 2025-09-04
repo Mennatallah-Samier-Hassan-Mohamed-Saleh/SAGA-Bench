@@ -39,18 +39,18 @@ bool supportedDataStruc(const std::string &type)
 
 void printUsage()
 {
-    std::cout << "Arguments:  -f filename -b batchSize -i initial batchSize -w weighted"
-	" -d directed -s dataStructure -n numNodes -a algorithm -t number of threads\n"
-	      << "First four arguments required\n"
+    std::cout << "Arguments:  -f filename -b batchSize -w weighted"
+	" -d directed -s dataStructure -n numNodes -a algorithm -t number of threads -i initial batchSize\n"
+	      << "First four arguments are required\n"
 	      << "-f filename       	should end in .csv\n"
 	      << "-b batchSize      	suggestion = 100K\n"
-		  << "-i initial batchSize    initial batch size (optional for scalability tests)\n"
 	      << "-w weighted       	0=unweighted   1=weighted\n"
 	      << "-d directed       	0=undirected   1=directed\n"
 	      << "-s dataStructure  	data structure to use (default: adList)\n"
 		  << "-n nodes       	  	max number of nodes  to initialize with\n"
 	      << "-a algorithm       	algorithm to run (default: traverse)\n"
 	      << "-t number of threads    (default: 16)\n"
+		  << "-i initial batchSize    initial batch size (optional for scalability tests)\n"
 	      << "  DATA STRUCTURE OPTIONS:\n"
 		  << "               	1) adList (single-threaded) \n"		  
 	      << "               	2) adListShared (multihtreaded shared style) \n"
