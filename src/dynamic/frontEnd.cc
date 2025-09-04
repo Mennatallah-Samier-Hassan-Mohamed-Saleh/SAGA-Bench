@@ -40,7 +40,7 @@ int main(int argc, char* argv[])
     int batch_id = 0;
     NodeID lastAssignedNodeID = -1;
     MapTable VMAP;
-
+    // Initial batch can be different than the rest of the batches for scalability experiments
     int64_t start_batch_size = (opts.initial_batch_size!= 0) ? opts.initial_batch_size : opts.batch_size;
     while (!file.eof()) {        
         EdgeList el = readBatchFromCSV(
