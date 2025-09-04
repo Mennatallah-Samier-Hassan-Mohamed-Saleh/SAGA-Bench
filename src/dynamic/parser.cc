@@ -44,7 +44,7 @@ void printUsage()
 	      << "First four arguments required\n"
 	      << "-f filename       	should end in .csv\n"
 	      << "-b batchSize      	suggestion = 100K\n"
-		  << "-i initial batchSize   initial batch size (optional for scalability tests)\n"
+		  << "-i initial batchSize    initial batch size (optional for scalability tests)\n"
 	      << "-w weighted       	0=unweighted   1=weighted\n"
 	      << "-d directed       	0=undirected   1=directed\n"
 	      << "-s dataStructure  	data structure to use (default: adList)\n"
