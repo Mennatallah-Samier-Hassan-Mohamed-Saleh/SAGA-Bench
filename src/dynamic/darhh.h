@@ -165,6 +165,7 @@ int32_t darhh<T>::pt_hash(NodeID const &n) const
 template <typename T>
 void darhh<T>::update(EdgeList const &el)
 {
+    //std::cout<< "Updating with " << el.size() << " edges." << std::endl;
     bool done = false;
     std::vector<std::unique_ptr<std::thread>> dqs;
 
