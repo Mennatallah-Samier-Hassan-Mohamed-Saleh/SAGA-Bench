@@ -58,20 +58,42 @@ SAGA-Bench is implemented in C++11 and the build system uses GNU Make. It uses b
 3. mkdir bin obj
 4. make 
 
-An executable `frontEnd` will be created. `frontEnd` should be run with the following parameters. `./frontEnd --help` also provides this information.
+An executable `frontEnd` will be created. `frontEnd` should be run with the following parameters. `./frontEnd -help` also provides this information.
 
 ```
--f : provides a location to an input graph file in .csv format
--b : batch size (500K is used in our paper evaluation)
--d : whether the input graph is directed or undirected. 0=undirected; 1=directed.
--w : whether weights should be read from the input file. 0=don't read weights; 1=read weights. Weights are required only for SSSP and SSWP. 
--s : data structure to be used (see DATA STRUCTURE OPTIONS below). 
--a : algorithm to be run (see ALGORITHM OPTIONS below). 
--n : max number of nodes the data structure must be initialized with. 
--t : number of data structure chunks for chunked-style adjacency list or degree-aware hashing. Each chunk corresponds to one thread. This parameter has no meaning for shared-style adjacency list and stinger (the value is not read for these two data structures).
+Printing help
+Arguments:  -f filename -b batchSize -i initial batchSize -w weighted -d directed -s dataStructure -n numNodes -a algorithm -t number of threads
+First four arguments required
+-f filename       	should end in .csv
+-b batchSize      	suggestion = 100K
+-i initial batchSize    initial batch size (optional for scalability tests)
+-w weighted       	0=unweighted   1=weighted
+-d directed       	0=undirected   1=directed
+-s dataStructure  	data structure to use (default: adList)
+-n nodes       	  	max number of nodes  to initialize with
+-a algorithm       	algorithm to run (default: traverse)
+-t number of threads    (default: 16)
+  DATA STRUCTURE OPTIONS:
+               	1) adList (single-threaded) 
+               	2) adListShared (multihtreaded shared style) 
+               	3) adListChunked (multithreaded chunk style) 
+               	4) degAwareRHH (multithreaded chunk style) 
+               	5) stinger (multihtreaded shared style)
+  ALGORITHM OPTIONS: 
+               	1) traverse
+               	2) prfromscratch
+               	3) prdyn
+               	4) ccfromscratch
+               	5) ccdyn
+               	6) mcfromscratch
+               	7) mcdyn 
+               	8) bfsfromscratch
+               	9) bfspdyn
+               	10) ssspfromscratch
+               	11) ssspdyn
+               	12) sswpfromscratch
+               	13) sswpdyn
 
-DATA STRUCTURE OPTIONS: 1) adListShared 2) adListChunked 3) degAwareRHH 4) stinger
-ALGORITHM OPTIONS: 1) prfromscratch 2) prdyn 3) ccfromscratch 4) ccdyn 5) mcfromscratch 6) mcdyn 7) bfsfromscratch 8) bfsyn 9) ssspfromscratch 10) ssspdyn 11) sswpfromscratch 12) sswpdyn
 ```
 
 `runme.sh` provides example command lines for running experiments. 
