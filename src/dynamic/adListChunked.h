@@ -207,7 +207,7 @@ void adListChunked<T>::update(const EdgeList& el) {
     vector<unique_ptr<thread>> dqs;
     
     //#######............. thread pinning.............#########
-    int64_t count = 2;
+    int64_t count = 0;
     if (directed) {
         //cout << "IN" << endl;
         for(auto& ptr:in){        
