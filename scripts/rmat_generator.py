@@ -10,8 +10,11 @@ if len(sys.argv) < 2:
 filename = sys.argv[1]
 N= 33554432
 M= 500000000
-a=0.55
-b=c=0.15
+a=0.5
+b=c=0.1
+# d=0.3
+
+print("Parameters set: N =", N, ", M =", M, ", a =", a, ", b =", b, ", c =", c, ", d =", 1 - (a + b + c))
 
 # Initialize random number generator
 print("Start random number generator:")
