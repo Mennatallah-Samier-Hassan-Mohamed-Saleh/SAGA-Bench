@@ -1,45 +1,58 @@
-# See LICENSE.txt for license details.
-
-C = g++
-CFLAGS = -O2 -Wall -Wextra -std=c++11 -fpermissive
-
+# Compiler and flags
 CXX = g++
-CXXFLAGS = -O2 -Wall -Wextra -pedantic -std=c++11 -fopenmp
+CXXFLAGS = -O2 -Wall -Wextra -pedantic -std=c++17 -fopenmp
 
+# Directories
+ABSEIL_DIR := external/abseil-cpp
 DYN_PREFIX := d_
-
 DYN_DIR := src/dynamic
 UTL_DIR := src/common
 OBJ_DIR := obj
 BIN_DIR := bin
 
-DYN_SRC := $(wildcard $(DYN_DIR)/*.cc)
-DYN_SRC += $(wildcard $(DYN_DIR)/*.c)
-DYN_SRC += $(wildcard $(UTL_DIR)/*.cc)
-DYN_HDR := $(wildcard $(DYN_DIR)/*.h)
-DYN_HDR += $(wildcard $(UTL_DIR)/*.h)
+# Includes
+INCLUDES = -I$(ABSEIL_DIR) -I$(DYN_DIR) -I$(UTL_DIR)
+CXXFLAGS += $(INCLUDES)
 
-DYN_OBJ := $(addprefix $(OBJ_DIR)/$(DYN_PREFIX),$(notdir $(patsubst %.c,%.o,$(wildcard $(DYN_DIR)/*.c))))
-DYN_OBJ += $(addprefix $(OBJ_DIR)/$(DYN_PREFIX),$(notdir $(patsubst %.cc,%.o,$(wildcard $(DYN_DIR)/*.cc))))
+# Source files
+DYN_SRC_CC := $(wildcard $(DYN_DIR)/*.cc)
+DYN_SRC_C := $(wildcard $(DYN_DIR)/*.c)
+UTL_SRC_CC := $(wildcard $(UTL_DIR)/*.cc)
+DYN_HDR := $(wildcard $(DYN_DIR)/*.h) $(wildcard $(UTL_DIR)/*.h)
 
-.PHONY : all
-all : $(BIN_DIR)/errorExtractor frontEnd 
+# Object files
+DYN_OBJ := $(addprefix $(OBJ_DIR)/$(DYN_PREFIX),$(notdir $(patsubst %.c,%.o,$(DYN_SRC_C))))
+DYN_OBJ += $(addprefix $(OBJ_DIR)/$(DYN_PREFIX),$(notdir $(patsubst %.cc,%.o,$(DYN_SRC_CC))))
+UTL_OBJ := $(addprefix $(OBJ_DIR)/$(DYN_PREFIX),$(notdir $(patsubst %.cc,%.o,$(UTL_SRC_CC))))
 
-$(BIN_DIR)/errorExtractor : errorExtractor.cc
-	$(CXX) $(CXXFLAGS) $< -o $@
+# Combine all objects
+ALL_OBJ := $(DYN_OBJ) $(UTL_OBJ)
 
-frontEnd : $(DYN_OBJ)
-	$(CXX) $(CXXFLAGS) $^ -o $@
+.PHONY: all clean
 
+all: $(BIN_DIR)/errorExtractor frontEnd
+
+# Compile dynamic .cc files
 $(OBJ_DIR)/$(DYN_PREFIX)%.o : $(DYN_DIR)/%.cc $(DYN_HDR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
+# Compile dynamic .c files
 $(OBJ_DIR)/$(DYN_PREFIX)%.o : $(DYN_DIR)/%.c $(DYN_HDR)
-	$(C) $(CFLAGS) -c $< -o $@
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-.PHONY : clean
+# Compile common .cc files
+$(OBJ_DIR)/$(DYN_PREFIX)%.o : $(UTL_DIR)/%.cc $(DYN_HDR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+# errorExtractor target (single file)
+$(BIN_DIR)/errorExtractor : errorExtractor.cc
+	$(CXX) $(CXXFLAGS) $< -o $@
+
+# frontEnd target links all objects (Abseil used as header-only)
+frontEnd : $(ALL_OBJ)
+	$(CXX) $(CXXFLAGS) $^ -o $@
 
 clean:
-	rm -f frontEnd
-	rm -f $(OBJ_DIR)/*.o
 	rm -f $(BIN_DIR)/*
+	rm -f $(OBJ_DIR)/*.o
+	rm -f frontEnd 
