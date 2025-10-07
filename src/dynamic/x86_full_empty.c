@@ -23,7 +23,7 @@ readfe(volatile int64_t * v) {
     while(val == MARKER) {
       val = *v;
     }
-    if(val == stinger_int64_cas(v, val, MARKER))
+    if(val == stinger_int64_cas((int64_t*)v, val, MARKER))
       break;
   }
   return val;
@@ -38,7 +38,7 @@ writeef(volatile int64_t * v, int64_t new_val) {
     while(val != MARKER) {
       val = *v;
     }
-    if(MARKER == stinger_int64_cas(v, MARKER, new_val))
+    if(MARKER == stinger_int64_cas((int64_t*)v, MARKER, new_val))
       break;
   }
   return val;
@@ -63,7 +63,7 @@ writeff(volatile int64_t * v, int64_t new_val) {
     while(val == MARKER) {
       val = *v;
     }
-    if(val == stinger_int64_cas(v, val, new_val))
+    if(val == stinger_int64_cas((int64_t*)v, val, new_val))
       break;
   }
   return val;
