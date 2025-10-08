@@ -57,6 +57,7 @@ void printUsage()
 		  << "               	3) adListChunked (multithreaded chunk style) \n"
 	      << "               	4) degAwareRHH (multithreaded chunk style) \n"
 	      << "               	5) stinger (multihtreaded shared style) \n"
+		  << "                6) abslBtreeSet (single-threaded) \n"
 	      << "  ALGORITHM OPTIONS: \n"
 	      << "               	1) traverse\n"
 	      << "               	2) prfromscratch\n"
