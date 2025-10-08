@@ -30,6 +30,13 @@ template <typename T>
 abslBtreeSet<T>::abslBtreeSet(bool w, bool d)
     : dataStruc(w, d) { std::cout << "Creating abslBtreeSet" << std::endl;  }
 
+
+/**
+ * check if vertex exists based on Edge flags
+ * update number of nodes and edges
+ * mark vertex as affected
+ * return true if vertex exists, false otherwise
+ * **/
 template <typename T>
 bool abslBtreeSet<T>::vertexExists(const Edge& e, bool source)
 {
@@ -47,6 +54,14 @@ bool abslBtreeSet<T>::vertexExists(const Edge& e, bool source)
     }
 }
 
+/**
+ * update data structures for a new vertex
+ * add new neighbor to out_neighbors or in_neighbors based on source flag
+ * add empty neighbor set for the other direction if directed   
+ * requires T to define operator< for ordering and setInfo for setting neighbor info
+ * makes use of absl::btree_set to maintain ordered unique neighbors
+ * more efficient for moderate number of neighbors compared to vector + sort + unique
+ * **/
 template <typename T>
 void abslBtreeSet<T>::updateForNewVertex(const Edge& e, bool source)
 {
@@ -62,6 +77,7 @@ void abslBtreeSet<T>::updateForNewVertex(const Edge& e, bool source)
         out_neighbors.push_back(neighbor_set);
 
         if (directed) {
+            // Add empty in_neighbors for this new vertex
             in_neighbors.emplace_back();
         }
     }
@@ -72,10 +88,21 @@ void abslBtreeSet<T>::updateForNewVertex(const Edge& e, bool source)
         absl::btree_set<T> neighbor_set;
         neighbor_set.insert(neighbor);
         in_neighbors.push_back(neighbor_set);
-
+        // Add empty out_neighbors for this new vertex
         out_neighbors.emplace_back();
     }
 }
+
+ /** 
+  * Update data structures for an existing vertex
+  * if neighbor exists, erase and re-insert with updated info
+  * if neighbor does not exist, 
+        *simply insert this ensures no duplicate neighbors and keeps the set ordered
+  * requires T to define operator< for ordering
+  * and setInfo for updating neighbor information
+  * this approach is efficient for moderate number of neighbors
+  * **/
+
 
 template <typename T>
 void abslBtreeSet<T>::updateForExistingVertex(const Edge& e, bool source)
@@ -113,14 +140,21 @@ void abslBtreeSet<T>::updateForExistingVertex(const Edge& e, bool source)
     }
 }
 
+/**
+ * Process a batch of edges to update the graph
+ * For each edge, check and update both source and destination vertices
+ * Calls vertexExists to check existence and update counts
+ * Calls updateForNewVertex or updateForExistingVertex as needed    
+ * **/
 template <typename T>
 void abslBtreeSet<T>::update(const EdgeList& el)
 {
     for (auto it = el.begin(); it != el.end(); ++it) {
+        //Process source vertex
         bool exists = vertexExists(*it, true);
         if (!exists) updateForNewVertex(*it, true);
         else updateForExistingVertex(*it, true);
-
+        
         bool exists1 = vertexExists(*it, false);
         if (!exists1) updateForNewVertex(*it, false);
         else updateForExistingVertex(*it, false);
