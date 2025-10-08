@@ -31,6 +31,7 @@ private:
     bool is_stinger;  
     bool is_rhh; 
 	bool is_adList2;   // chunk style multithreading
+	bool is_abslBtreeSet; // absl btree set style
 
 public:    
     Algorithm(const std::string& alg_, dataStruc* ds_, const std::string& dtype_):
@@ -44,6 +45,7 @@ public:
 		is_stinger = (dtype.compare("stinger") == 0);
 		is_rhh = (dtype.compare("degAwareRHH") == 0);
 		is_adList2 = (dtype.compare("adListChunked") == 0);
+		is_abslBtreeSet = (dtype.compare("abslBtreeSet") == 0);
 		std::cout << "Algorithm: " << alg << std::endl;
 		std::cout << "Data type: " << dtype << std::endl;
     }
@@ -59,6 +61,8 @@ public:
 		stinger *ds4 = dynamic_cast<stinger*>(ds);
 		adList<NodeWeight> *ds7 = dynamic_cast<adList<NodeWeight>*>(ds);
 		adList<Node> *ds8 = dynamic_cast<adList<Node>*>(ds);
+		abslBtreeSet<NodeWeight> *ds9 = dynamic_cast<abslBtreeSet<NodeWeight>*>(ds);
+		abslBtreeSet<Node> *ds10 = dynamic_cast<abslBtreeSet<Node>*>(ds);
 	
 		if (alg == "traverse") {
 	 	    if (is_adList && ds->weighted)
@@ -79,6 +83,10 @@ public:
                 return traverseAlg(ds7);
 			else if (is_adListST && !ds->weighted) 
 			    return traverseAlg(ds8);
+			else if (is_abslBtreeSet && ds->weighted)
+				return traverseAlg(ds9);
+			else if (is_abslBtreeSet && !ds->weighted) 
+			    return traverseAlg(ds10);
 		} else if (alg == "prfromscratch") {
 	    	if (is_adList && ds->weighted)
 				return PRStartFromScratch(ds0);
@@ -97,7 +105,11 @@ public:
 			else if (is_adListST && ds->weighted)
                 return PRStartFromScratch(ds7);
 			else if (is_adListST && !ds->weighted) 
-			    return PRStartFromScratch(ds8);    
+			    return PRStartFromScratch(ds8);
+			else if (is_abslBtreeSet && ds->weighted)
+				return PRStartFromScratch(ds9);
+			else if (is_abslBtreeSet && !ds->weighted) 
+			    return PRStartFromScratch(ds10);    
 		} else if (alg == "prdyn") {
 	    	if (is_adList && ds->weighted)
 				return dynPRAlg(ds0);
@@ -116,7 +128,11 @@ public:
 			else if (is_adListST && ds->weighted)
                 return dynPRAlg(ds7);
 			else if (is_adListST && !ds->weighted) 
-			    return dynPRAlg(ds8);  
+			    return dynPRAlg(ds8);
+			else if (is_abslBtreeSet && ds->weighted)
+				return dynPRAlg(ds9);
+			else if (is_abslBtreeSet && !ds->weighted) 
+			    return dynPRAlg(ds10);  
 		} else if (alg == "ccfromscratch") {
 	    	if (is_adList && ds->weighted)
 				return CCStartFromScratch(ds0);
@@ -135,7 +151,11 @@ public:
 			else if (is_adListST && ds->weighted)
                 return CCStartFromScratch(ds7);
 			else if (is_adListST && !ds->weighted) 
-			    return CCStartFromScratch(ds8);     
+			    return CCStartFromScratch(ds8);
+			else if (is_abslBtreeSet && ds->weighted)
+				return CCStartFromScratch(ds9);
+			else if (is_abslBtreeSet && !ds->weighted) 
+			    return CCStartFromScratch(ds10);     
 		} else if (alg == "ccdyn") {
 	    	if (is_adList && ds->weighted)
 				return dynCCAlg(ds0);
@@ -155,6 +175,10 @@ public:
                 return dynCCAlg(ds7);
 			else if (is_adListST && !ds->weighted) 
 			    return dynCCAlg(ds8);    
+			else if (is_abslBtreeSet && ds->weighted)
+				return dynCCAlg(ds9);
+			else if (is_abslBtreeSet && !ds->weighted) 
+			    return dynCCAlg(ds10);
 		} else if (alg == "mcfromscratch") {
 	    	if (is_adList && ds->weighted)
 				return MCStartFromScratch(ds0);
@@ -173,7 +197,11 @@ public:
 			else if (is_adListST && ds->weighted)
                 return MCStartFromScratch(ds7);
 			else if (is_adListST && !ds->weighted) 
-			    return MCStartFromScratch(ds8);    
+			    return MCStartFromScratch(ds8); 
+			else if (is_abslBtreeSet && ds->weighted)		
+				return MCStartFromScratch(ds9);
+			else if (is_abslBtreeSet && !ds->weighted) 
+			    return MCStartFromScratch(ds10);   
 		} else if (alg == "mcdyn") {
 	    	if (is_adList && ds->weighted)
 				return dynMCAlg(ds0);
@@ -193,6 +221,10 @@ public:
                 return dynMCAlg(ds7);
 			else if (is_adListST && !ds->weighted) 
 			    return dynMCAlg(ds8); 
+			else if (is_abslBtreeSet && ds->weighted)
+				return dynMCAlg(ds9);
+			else if (is_abslBtreeSet && !ds->weighted) 
+			    return dynMCAlg(ds10);
 		} else if (alg == "bfsfromscratch") {
 	    	if (source == -1) {
 				DynamicSourcePicker sp(ds);
@@ -218,7 +250,11 @@ public:
 			else if (is_adListST && ds->weighted)
                 return BFSStartFromScratch(ds7, source);
 			else if (is_adListST && !ds->weighted) 
-			    return BFSStartFromScratch(ds8, source);  
+			    return BFSStartFromScratch(ds8, source);
+			else if (is_abslBtreeSet && ds->weighted)
+				return BFSStartFromScratch(ds9, source);
+			else if (is_abslBtreeSet && !ds->weighted) 
+			    return BFSStartFromScratch(ds10, source);  
 		} else if (alg == "bfsdyn") {
 	    	if(source == -1){
 				DynamicSourcePicker sp(ds);
@@ -245,6 +281,10 @@ public:
                 return dynBFSAlg(ds7, source);
 			else if (is_adListST && !ds->weighted) 
 			    return dynBFSAlg(ds8, source);
+			else if (is_abslBtreeSet && ds->weighted)
+				return dynBFSAlg(ds9, source);		
+			else if (is_abslBtreeSet && !ds->weighted) 
+			    return dynBFSAlg(ds10, source);
 		} else if (alg == "ssspfromscratch") {
 	    	if (source == -1) {
 				DynamicSourcePicker sp(ds);
@@ -271,6 +311,10 @@ public:
                 return SSSPStartFromScratch(ds7, source, 1);
 			else if (is_adListST && !ds->weighted) 
 			    return SSSPStartFromScratch(ds8, source, 1);
+			else if (is_abslBtreeSet && ds->weighted)
+				return SSSPStartFromScratch(ds9, source, 1);		
+			else if (is_abslBtreeSet && !ds->weighted) 
+			    return SSSPStartFromScratch(ds10, source, 1);
 		} else if (alg == "ssspdyn") {
 		    if (source == -1) {
 				DynamicSourcePicker sp(ds);
@@ -297,6 +341,10 @@ public:
                 return dynSSSPAlg(ds7, source);
 			else if (is_adListST && !ds->weighted) 
 			    return dynSSSPAlg(ds8, source);
+			else if (is_abslBtreeSet && ds->weighted)		
+				return dynSSSPAlg(ds9, source);
+			else if (is_abslBtreeSet && !ds->weighted) 
+			    return dynSSSPAlg(ds10, source);
 		} else if (alg == "sswpfromscratch") {
 	    	if (source == -1) {
 				DynamicSourcePicker sp(ds);
@@ -323,6 +371,10 @@ public:
                 return SSWPStartFromScratch(ds7, source);
 			else if (is_adListST && !ds->weighted) 
 			    return SSWPStartFromScratch(ds8, source);
+			else if (is_abslBtreeSet && ds->weighted)		
+				return SSWPStartFromScratch(ds9, source);
+			else if (is_abslBtreeSet && !ds->weighted) 
+			    return SSWPStartFromScratch(ds10, source);
 		} else if (alg == "sswpdyn") {
 	    	if(source == -1) {
 				DynamicSourcePicker sp(ds);
@@ -349,6 +401,10 @@ public:
                 return dynSSWPAlg(ds7, source);
 			else if (is_adListST && !ds->weighted) 
 			    return dynSSWPAlg(ds8, source);
+			else if (is_abslBtreeSet && ds->weighted)		
+				return dynSSWPAlg(ds9, source);		
+			else if (is_abslBtreeSet && !ds->weighted) 
+			    return dynSSWPAlg(ds10, source);
 		} else {
 	    	std::cout << "Error! Unrecognized Algorithm!" << std::endl;
 	    	exit(0);
