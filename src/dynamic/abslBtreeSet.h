@@ -28,7 +28,7 @@ public:
 
 template <typename T>
 abslBtreeSet<T>::abslBtreeSet(bool w, bool d)
-    : dataStruc(w, d) { /* std::cout << "Creating abslBtreeSet" << std::endl; */ }
+    : dataStruc(w, d) { std::cout << "Creating abslBtreeSet" << std::endl;  }
 
 template <typename T>
 bool abslBtreeSet<T>::vertexExists(const Edge& e, bool source)
