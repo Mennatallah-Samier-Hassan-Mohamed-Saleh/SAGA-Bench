@@ -15,4 +15,4 @@
 module purge
 module load gcc cmake perl python libGl libx11 fontconfig mesa
 
-bash $SCRATCH/Masters_thesis/Thesis/SAGA-Bench/scripts/prepare_dataset.sh
+bash $SCRATCH/Masters_thesis/Thesis/SAGA-Bench/scripts/prepare_Facebook_dataset.sh
