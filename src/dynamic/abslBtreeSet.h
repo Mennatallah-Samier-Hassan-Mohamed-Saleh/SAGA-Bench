@@ -155,6 +155,7 @@ void abslBtreeSet<T>::update(const EdgeList& el)
         if (!exists) updateForNewVertex(*it, true);
         else updateForExistingVertex(*it, true);
         
+        //Process destination vertex
         bool exists1 = vertexExists(*it, false);
         if (!exists1) updateForNewVertex(*it, false);
         else updateForExistingVertex(*it, false);
