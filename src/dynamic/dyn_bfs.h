@@ -169,18 +169,18 @@ void BFSStartFromScratch(T* ds, NodeID source){
     SlidingQueue<NodeID> queue(ds->num_nodes);   
     queue.push_back(source);
     queue.slide_window();  
-    std::cout << "Queue not empty, Queue size: " << queue.size() << std::endl;  
+    //std::cout << "Queue not empty, Queue size: " << queue.size() << std::endl;  
     while(!queue.empty()){       
-        std::cout << "Queue not empty, Queue size: " << queue.size() << std::endl;         
+        //std::cout << "Queue not empty, Queue size: " << queue.size() << std::endl;         
         #pragma omp parallel
         {             
             QueueBuffer<NodeID> lqueue(queue);
             #pragma omp for 
             for (auto q_iter = queue.begin(); q_iter < queue.end(); q_iter++){
                 NodeID u = *q_iter;
-                std::cout << "Visiting node: " << u << std::endl;
+                //std::cout << "Visiting node: " << u << std::endl;
                 for(auto v: out_neigh(u, ds)){
-                    std::cout << "Visiting neighbor: " << v << std::endl;
+                    //std::cout << "Visiting neighbor: " << v << std::endl;
                     float curr_depth = ds->property[v];
                     float new_depth = ds->property[u] + 1;
                     if(curr_depth < 0){
