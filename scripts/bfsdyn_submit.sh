@@ -38,26 +38,24 @@ cd $SCRATCH/Masters_thesis/Thesis/SAGA-Bench
 
 #Testing bfsfromscratch on different data structures for slashdot dataset
 echo "Starting bfsfromscratch tests on adList for slashdot dataset"
-./frontEnd -d 1 -w 0 -f $SCRATCH/datasets/SAGAdatasets/soc-Slashdot0902.shuffle.t.w.csv -b 16352 -s adList -n 82168 -a bfsfromscratch -t 1 | tee -a Slashdot_adList.log
+./frontEnd -d 1 -w 0 -f $SCRATCH/datasets/SAGAdatasets/soc-Slashdot0902.shuffle.t.w.csv -b 16352 -s adList -n 82168 -a bfsdyn -t 1 | tee -a Slashdot_adList.log
 rm Update.csv
 rm Alg.csv
 echo "Starting bfsfromscratch tests on abslBtreeSet for slashdot dataset"
-./frontEnd -d 1 -w 0 -f $SCRATCH/datasets/SAGAdatasets/soc-Slashdot0902.shuffle.t.w.csv -b 16352 -s abslBtreeSet -n 82168 -a bfsfromscratch -t 1 | tee -a Slashdot_abslBtreeSet.log
+./frontEnd -d 1 -w 0 -f $SCRATCH/datasets/SAGAdatasets/soc-Slashdot0902.shuffle.t.w.csv -b 16352 -s abslBtreeSet -n 82168 -a bfsdyn -t 1 | tee -a Slashdot_abslBtreeSet.log
 rm Update.csv
 rm Alg.csv
 echo "Starting bfsfromscratch tests on stinger for slashdot dataset"
-./frontEnd -d 1 -w 0 -f $SCRATCH/datasets/SAGAdatasets/soc-Slashdot0902.shuffle.t.w.csv -b 16352 -s stinger -n 82168 -a bfsfromscratch -t 1 | tee -a Slashdot_stinger.log
-rm Update.csv
-rm Alg.csv
+./frontEnd -d 1 -w 0 -f $SCRATCH/datasets/SAGAdatasets/soc-Slashdot0902.shuffle.t.w.csv -b 16352 -s stinger -n 82168 -a bfsdyn -t 1 | tee -a Slashdot_stinger.log
 
 #Testing bfsfromscratch on different data structures for Facebook dataset
 echo "Starting bfsfromscratch tests on adList for facebook dataset"
-./frontEnd -d 0 -w 0 -f $SCRATCH/datasets/SAGAdatasets/facebook_combined.shuffle.t.w.csv -b 1522 -s adList -n 4039 -a bfsfromscratch -t 1 | tee -a facebook_adList.log
+./frontEnd -d 0 -w 0 -f $SCRATCH/datasets/SAGAdatasets/facebook_combined.shuffle.t.w.csv -b 1522 -s adList -n 4039 -a bfsdyn -t 1 | tee -a facebook_adList.log
 rm Update.csv
 rm Alg.csv
 echo "Starting bfsfromscratch tests on abslBtreeSet for facebook dataset"
-./frontEnd -d 0 -w 0 -f $SCRATCH/datasets/SAGAdatasets/facebook_combined.shuffle.t.w.csv -b 1522 -s abslBtreeSet -n 4039 -a bfsfromscratch -t 1 | tee -a facebook_abslBtreeSet.log
+./frontEnd -d 0 -w 0 -f $SCRATCH/datasets/SAGAdatasets/facebook_combined.shuffle.t.w.csv -b 1522 -s abslBtreeSet -n 4039 -a bfsdyn -t 1 | tee -a facebook_abslBtreeSet.log
 rm Update.csv
 rm Alg.csv
 echo "Starting bfsfromscratch tests on stinger for facebook dataset"
-./frontEnd -d 0 -w 0 -f $SCRATCH/datasets/SAGAdatasets/facebook_combined.shuffle.t.w.csv -b 1522 -s stinger -n 4039 -a bfsfromscratch -t 1 | tee -a facebook_stinger.log
+./frontEnd -d 0 -w 0 -f $SCRATCH/datasets/SAGAdatasets/facebook_combined.shuffle.t.w.csv -b 1522 -s stinger -n 4039 -a bfsdyn -t 1 | tee -a facebook_stinger.log
