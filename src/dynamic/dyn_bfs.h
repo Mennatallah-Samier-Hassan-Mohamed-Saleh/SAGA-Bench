@@ -11,7 +11,8 @@
 /* Algorithm: Incremental BFS and BFS starting from scratch */
 
 template<typename T> 
-void BFSIter0(T* ds, SlidingQueue<NodeID>& queue){  
+void BFSIter0(T* ds, SlidingQueue<NodeID>& queue){
+    std::cout << "BFS Iteration 0" << std::endl;  
     pvector<bool> visited(ds->num_nodes, false);     
   
     #pragma omp parallel     
@@ -143,8 +144,11 @@ void dynBFSAlg(T* ds, NodeID source){
     for(NodeID i = 0; i < ds->num_nodes; i++){
         ds->affected[i] = false;
     }
-
-    t.Stop();    
+    t.Stop();   
+    // Print distances after BFS completes
+    for (NodeID n = 0; n < ds->num_nodes; n++) {
+        std::cout << "Distance to " << n << ": " << ds->property[n] << std::endl;
+    } 
     ofstream out("Alg.csv", std::ios_base::app);   
     out << t.Seconds() << std::endl;    
     out.close();
