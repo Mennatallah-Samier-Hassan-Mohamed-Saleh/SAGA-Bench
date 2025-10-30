@@ -33,44 +33,44 @@ module load gcc cmake perl python libGl libx11 fontconfig mesa
 
 cd $SCRATCH/Masters_thesis/Thesis/SAGA-Bench
 
-#Testing bfsfromscratch on adList data structures for test.csv
+#Testing ccfromscratch on adList data structures for test.csv
 for (( i=1; i<=5; i++ )); do
-    ./frontEnd -d 1 -w 0 -f ./test.csv -b 10 -s adList -n 40 -a bfsfromscratch -t 1 | tee -a test_adList_scratch_$i.log
+    ./frontEnd -d 1 -w 0 -f ./test.csv -b 10 -s adList -n 40 -a ccfromscratch -t 1 | tee -a test_adList_scratch_$i.log
     rm Update.csv
     rm Alg.csv
 done
 
-#Testing bfsfromscratch on adList data structures for slashdot dataset
+#Testing ccfromscratch on adList data structures for slashdot dataset
 for (( i=1; i<=5; i++ )); do
-    ./frontEnd -d 1 -w 0 -f $SCRATCH/datasets/SAGAdatasets/soc-Slashdot0902.shuffle.t.w.csv -b 16352 -s adList -n 82168 -a bfsfromscratch -t 1 | tee -a Slashdot_adList_scratch_$i.log
+    ./frontEnd -d 1 -w 0 -f $SCRATCH/datasets/SAGAdatasets/soc-Slashdot0902.shuffle.t.w.csv -b 16352 -s adList -n 82168 -a ccfromscratch -t 1 | tee -a Slashdot_adList_scratch_$i.log
     rm Update.csv
     rm Alg.csv
 done
 
-#Testing bfsfromscratch on adList data structures for facebook dataset
+#Testing ccfromscratch on adList data structures for facebook dataset
 for (( i=1; i<=5; i++ )); do
-    ./frontEnd -d 0 -w 0 -f $SCRATCH/datasets/SAGAdatasets/facebook_combined.shuffle.t.w.csv -b 1522 -s adList -n 4039 -a bfsfromscratch -t 1 | tee -a facebook_adList_scratch_$i.log
+    ./frontEnd -d 0 -w 0 -f $SCRATCH/datasets/SAGAdatasets/facebook_combined.shuffle.t.w.csv -b 1522 -s adList -n 4039 -a ccfromscratch -t 1 | tee -a facebook_adList_scratch_$i.log
     rm Update.csv
     rm Alg.csv
 done
 
-#Testing bfsdyn on adList data structures for test.csv
+#Testing ccdyn on adList data structures for test.csv
 for (( i=1; i<=5; i++ )); do
-    ./frontEnd -d 1 -w 0 -f ./test.csv -b 10 -t 24 -s adList -n 40 -a bfsdyn -t 1 | tee -a test_adList_dyn_$i.log
+    ./frontEnd -d 1 -w 0 -f ./test.csv -b 10 -t 24 -s adList -n 40 -a ccdyn -t 1 | tee -a test_adList_dyn_$i.log
     rm Update.csv
     rm Alg.csv
 done
 
-#Testing bfsdyn on adList data structures for slashdot dataset
+#Testing ccdyn on adList data structures for slashdot dataset
 for (( i=1; i<=5; i++ )); do
-    ./frontEnd -d 1 -w 0 -f $SCRATCH/datasets/SAGAdatasets/soc-Slashdot0902.shuffle.t.w.csv -b 16352 -s adList -n 82168 -a bfsdyn -t 1 | tee -a Slashdot_adList_dyn_$i.log
+    ./frontEnd -d 1 -w 0 -f $SCRATCH/datasets/SAGAdatasets/soc-Slashdot0902.shuffle.t.w.csv -b 16352 -s adList -n 82168 -a ccdyn -t 1 | tee -a Slashdot_adList_dyn_$i.log
     rm Update.csv
     rm Alg.csv
 done
 
-#Testing bfsdyn on adList data structures for facebook dataset
+#Testing ccdyn on adList data structures for facebook dataset
 for (( i=1; i<=5; i++ )); do
-    ./frontEnd -d 0 -w 0 -f $SCRATCH/datasets/SAGAdatasets/facebook_combined.shuffle.t.w.csv -b 1522 -s adList -n 4039 -a bfsdyn -t 1 | tee -a facebook_adList_dyn_$i.log
+    ./frontEnd -d 0 -w 0 -f $SCRATCH/datasets/SAGAdatasets/facebook_combined.shuffle.t.w.csv -b 1522 -s adList -n 4039 -a ccdyn -t 1 | tee -a facebook_adList_dyn_$i.log
     rm Update.csv
     rm Alg.csv
 done
