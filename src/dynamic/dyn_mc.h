@@ -116,7 +116,11 @@ void dynMCAlg(T* ds){
         ds->affected[i] = false;
     }     
 
-    t.Stop();    
+    t.Stop();
+    //Print the MC for each node 
+    for (NodeID n = 0; n < ds->num_nodes; n++) {
+        std::cout << "Node " << n << " : has MC value" << ds->property[n] << std::endl;
+    }     
     ofstream out("Alg.csv", std::ios_base::app);   
     out << t.Seconds() << std::endl;    
     out.close();
@@ -201,7 +205,11 @@ void MCStartFromScratch(T* ds){
         queue.slide_window();
     }
 
-    t.Stop();    
+    t.Stop();
+    //Print the MC for each node 
+    for (NodeID n = 0; n < ds->num_nodes; n++) {
+        std::cout << "Node " << n << " : has MC value" << ds->property[n] << std::endl;
+    }       
     ofstream out("Alg.csv", std::ios_base::app);   
     out << t.Seconds() << std::endl;    
     out.close();
