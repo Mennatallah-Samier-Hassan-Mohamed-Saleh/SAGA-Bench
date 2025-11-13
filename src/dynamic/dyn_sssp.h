@@ -117,7 +117,11 @@ void dynSSSPAlg(T* ds, NodeID source){
         ds->affected[i] = false;
     }         
 
-    t.Stop();    
+    t.Stop();  
+    // Print the SSSP for each node
+    for (NodeID n = 0; n < ds->num_nodes; n++) {
+        std::cout << "Node " << n << " : has SSSP value: " << ds->property[n] << std::endl;
+    }    
     ofstream out("Alg.csv", std::ios_base::app);   
     out << t.Seconds() << std::endl;    
     out.close();
@@ -212,7 +216,11 @@ void SSSPStartFromScratch(T* ds, NodeID source, float delta){
         //std::cout << "took " << iter << " iterations" << std::endl;
     }    
 
-    t.Stop();    
+    t.Stop();
+    // Print the SSSP for each node
+    for (NodeID n = 0; n < ds->num_nodes; n++) {
+        std::cout << "Node " << n << " : has SSSP value: " << ds->property[n] << std::endl;
+    }    
     ofstream out("Alg.csv", std::ios_base::app);   
     out << t.Seconds() << std::endl;    
     out.close();

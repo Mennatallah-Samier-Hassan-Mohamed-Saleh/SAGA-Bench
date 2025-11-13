@@ -134,7 +134,11 @@ void dynSSWPAlg(T* ds, NodeID source){
         ds->affected[i] = false;
     }      
 
-    t.Stop();    
+    t.Stop(); 
+    // Print the SSWP for each node
+    for (NodeID n = 0; n < ds->num_nodes; n++) {
+        std::cout << "Node " << n << " : has SSWP value: " << ds->property[n] << std::endl;
+    }       
     ofstream out("Alg.csv", std::ios_base::app);   
     out << t.Seconds() << std::endl;    
     out.close();    
@@ -191,7 +195,11 @@ void SSWPStartFromScratch(T* ds, NodeID source){
         queue.slide_window();        
     }
 
-    t.Stop();    
+    t.Stop();
+    // Print the SSWP for each node
+    for (NodeID n = 0; n < ds->num_nodes; n++) {
+        std::cout << "Node " << n << " : has SSWP value: " << ds->property[n] << std::endl;
+    }    
     ofstream out("Alg.csv", std::ios_base::app);   
     out << t.Seconds() << std::endl;    
     out.close();
