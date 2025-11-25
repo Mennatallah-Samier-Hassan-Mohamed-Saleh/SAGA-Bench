@@ -34,3 +34,8 @@
 frontEnd
 bin/*
 obj/*
+
+#Output files 
+*.log
+*.csv
+*.err
