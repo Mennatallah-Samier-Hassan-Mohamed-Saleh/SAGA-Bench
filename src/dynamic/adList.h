@@ -145,7 +145,16 @@ void adList<T>::update(const EdgeList& el)
         bool exists1 = vertexExists(*it, false); 
         if(!exists1) updateForNewVertex(*it, false);
         else updateForExistingVertex(*it, false); 
-    }               
+    }
+    
+    /*Sort neighbors to match absl::btree_set order*/
+    /*
+    for (NodeID n = 0; n < num_nodes; n++) {
+        std::sort(out_neighbors[n].begin(), out_neighbors[n].end());
+        if (directed)
+            std::sort(in_neighbors[n].begin(), in_neighbors[n].end());
+    }
+    */               
 }
 
 template <typename T>
