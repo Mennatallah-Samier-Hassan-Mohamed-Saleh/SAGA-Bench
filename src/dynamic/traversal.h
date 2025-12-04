@@ -505,6 +505,29 @@ public:
     }
 };
 
+// Specialization for abslBtreeSetShared<U>
+template <typename U>
+class neighborhood<abslBtreeSetShared<U>> {    
+private:
+    using iter = neighborhood_iter<abslBtreeSetShared<U>>;
+    NodeID src;
+    abslBtreeSetShared<U> *ds;
+    //Flag to indicate whether to iterate over in-neighbors or out-neighbors
+    bool in;
+public:
+    neighborhood(NodeID src, abslBtreeSetShared<U> *ds, bool in): src(src), ds(ds), in(in) {}
+    
+    // CALL THE ITERATOR'S SPECIALIZED begin() METHOD
+    iter begin() {
+        return iter(ds, src, in);
+    } 
+
+    // CALL THE ITERATOR'S SPECIALIZED end() METHOD
+    iter end() {
+        iter it(ds, src, in);
+        return it.end(); // This calls the specialized end() method from neighborhood_iter<abslBtreeSet<U>>
+    }
+};
 /**
  * A function to return an iterable object for in-neighbors of a node
  * If the data structure is undirected, it returns out-neighbors
@@ -573,6 +596,80 @@ public:
             n.cursor = ds->out_neighbors[node].end();
         return n;
     }
+};
+
+/**
+* A function to return an iterable object for in-neighbors of a node
+* If the data structure is undirected, it returns out-neighbors
+* @param n The node whose in-neighbors are to be iterated over
+* @param ds The data structure
+* @return An iterable object for in-neighbors of node n
+* If ds is undirected, it returns out-neighbors
+* **/
+template<typename U>
+class neighborhood_iter<abslBtreeSetShared<U>> {   
+   friend class neighborhood<abslBtreeSetShared<U>>;
+private:     
+   abslBtreeSetShared<U>* ds;     
+   NodeID node;
+   bool in_neigh;
+   typename absl::btree_set<U>::iterator cursor;
+   typename absl::btree_set<U>::iterator end_cursor;
+public:
+   neighborhood_iter(abslBtreeSetShared<U>* _ds, NodeID _n, bool _in_neigh)
+       : ds(_ds), node(_n), in_neigh(_in_neigh) {
+       // Initialize cursor and end_cursor based on in_neigh
+       if (in_neigh) {
+           cursor = ds->in_neighbors[node].begin();
+           end_cursor = ds->in_neighbors[node].end();
+       } else {
+           cursor = ds->out_neighbors[node].begin();
+           end_cursor = ds->out_neighbors[node].end();
+       }
+   }
+
+
+   //Compare iterators for inequality
+   bool operator!=(const neighborhood_iter& it) const {
+       return cursor != it.cursor;
+   }
+
+
+   // Increment the iterator to the next element
+   neighborhood_iter& operator++() {
+       ++cursor;
+       return *this;
+   }
+
+
+   // Advances the iterator to the next neighbor and
+   //returns the previous iterator state (standard post-increment semantics).
+   neighborhood_iter operator++(int) {
+       neighborhood_iter tmp = *this;
+       ++cursor;
+       return tmp;
+   }
+  
+   // Dereference the iterator to get the current neighbor's NodeID
+   NodeID operator*() const {
+       return cursor->getNodeID();
+   }
+
+
+   // Extract the weight of the current neighbor
+   Weight extractWeight() const {
+       return cursor->getWeight();
+   }
+  
+   //Returns an iterator representing the end of the neighborhood
+   neighborhood_iter<abslBtreeSetShared<U>> end(){
+       neighborhood_iter<abslBtreeSetShared<U>> n(ds, node, in_neigh);
+       if (in_neigh)
+           n.cursor = ds->in_neighbors[node].end();
+       else
+           n.cursor = ds->out_neighbors[node].end();
+       return n;
+   }
 };
 
 template<typename T>

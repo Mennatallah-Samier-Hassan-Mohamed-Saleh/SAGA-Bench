@@ -34,7 +34,7 @@ bool supportedAlg(const std::string& alg)
 
 bool supportedDataStruc(const std::string &type)
 {
-    return (type== "adList" || type == "adListShared" || type == "degAwareRHH" || type == "stinger" || type == "adListChunked" || type == "abslBtreeSet");
+    return (type== "adList" || type == "adListShared" || type == "degAwareRHH" || type == "stinger" || type == "adListChunked" || type == "abslBtreeSet" || type == "abslBtreeSetShared");
 }
 
 void printUsage()
@@ -58,6 +58,7 @@ void printUsage()
 	      << "               	4) degAwareRHH (multithreaded chunk style) \n"
 	      << "               	5) stinger (multihtreaded shared style) \n"
 		  << "                6) abslBtreeSet (single-threaded) \n"
+		  << "               7) abslBtreeSetShared (multihtreaded shared style) \n"
 	      << "  ALGORITHM OPTIONS: \n"
 	      << "               	1) traverse\n"
 	      << "               	2) prfromscratch\n"

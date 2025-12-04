@@ -9,6 +9,7 @@
 #include "darhh.h"
 #include "adListChunked.h"
 #include "abslBtreeSet.h"
+#include "abslBtreeSetShared.h"
 
 dataStruc* createDataStruc(const std::string& type, bool weighted, bool directed, int64_t num_nodes, int64_t num_threads);
 #endif

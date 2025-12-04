@@ -81,6 +81,7 @@ First four arguments required
                	4) degAwareRHH (multithreaded chunk style) 
                	5) stinger (multihtreaded shared style)
                 6) abslBtreeSet (single-threaded)
+                7) abslBtreeSetShared (multihtreaded shared style)
   ALGORITHM OPTIONS: 
                	1) traverse
                	2) prfromscratch

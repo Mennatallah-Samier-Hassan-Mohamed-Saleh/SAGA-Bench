@@ -6,7 +6,13 @@ dataStruc* createDataStruc(const std::string& type, bool weighted, bool directed
 	    return new abslBtreeSet<NodeWeight>(weighted, directed); 
       else
 	    return new abslBtreeSet<Node>(weighted, directed);
-    }     
+    }
+    if (type == "abslBtreeSetShared") {
+      if (weighted)
+	    return new abslBtreeSetShared<NodeWeight>(weighted, directed); 
+      else
+	    return new abslBtreeSetShared<Node>(weighted, directed);
+    }       
     else if (type == "adList") {
       if (weighted)
 	    return new adList<NodeWeight>(weighted, directed); 
