@@ -4,22 +4,35 @@
 #include <iostream>
 #include "absl/container/btree_set.h"
 
+#include <thread>
+#include <stdlib.h>
+#include <mutex>
+
+#include <cassert>
+#include "x86_full_empty.h"
+#include "stinger_atomics.h"
+
 #include "abstract_data_struc.h"
 #include "print.h"
 
-// T must define operator< for btree_set ordering and setInfo method
+bool compare_and_swap(bool &x, const bool &old_val, const bool &new_val);
+
+// T can be either node or nodeweight
 template <typename T>
 class abslBtreeSetShared: public dataStruc {
-private:
-    bool vertexExists(const Edge& e, bool source);
-    void updateForNewVertex(const Edge& e, bool source);
+private: 
+    void processMetaData(const Edge& e, bool source);
     void updateForExistingVertex(const Edge& e, bool source);
+    
+
+    std::vector<std::unique_ptr<std::mutex>> in_mutex, out_mutex;
+    int64_t num_nodes_initialize;
 
 public:
     std::vector<absl::btree_set<T>> out_neighbors;
     std::vector<absl::btree_set<T>> in_neighbors;
 
-    abslBtreeSetShared(bool w, bool d);
+    abslBtreeSetShared(bool w, bool d,int64_t _num_nodes);
     void update(const EdgeList& el) override;
     void print() override;
     int64_t in_degree(NodeID n) override;
@@ -27,70 +40,45 @@ public:
 };
 
 template <typename T>
-abslBtreeSetShared<T>::abslBtreeSetShared(bool w, bool d)
-    : dataStruc(w, d) { std::cout << "Creating abslBtreeSetShared" << std::endl;  }
+abslBtreeSetShared<T>::abslBtreeSetShared(bool w, bool d,int64_t _num_nodes): dataStruc(w, d), num_nodes_initialize(_num_nodes) { 
+    std::cout << "Creating abslBtreeSetShared" << std::endl;
+    property.resize(num_nodes_initialize, -1);    
+    affected.resize(num_nodes_initialize); affected.fill(false);
 
-
-/**
- * check if vertex exists based on Edge flags
- * update number of nodes and edges
- * mark vertex as affected
- * return true if vertex exists, false otherwise
- * **/
-template <typename T>
-bool abslBtreeSetShared<T>::vertexExists(const Edge& e, bool source)
-{
-    bool exists = source ? e.sourceExists : e.destExists;
-    if (exists) {
-        num_edges++;
-        if (source) affected[e.source] = 1;
-        else affected[e.destination] = 1;
-        return true;
-    } else {
-        num_nodes++;
-        num_edges++;
-        affected.push_back(1);
-        return false;
+    out_neighbors.resize(num_nodes_initialize);    
+    in_neighbors.resize(num_nodes_initialize);
+    
+    // Malloc for mutex.
+    out_mutex.resize(num_nodes_initialize);
+    in_mutex.resize(num_nodes_initialize);
+    for  (unsigned int k = 0; k< num_nodes_initialize; k++){
+        out_mutex[k].reset(new std::mutex());
+        in_mutex[k].reset(new std::mutex());
     }
 }
 
-/**
- * update data structures for a new vertex
- * add new neighbor to out_neighbors or in_neighbors based on source flag
- * add empty neighbor set for the other direction if directed   
- * requires T to define operator< for ordering and setInfo for setting neighbor info
- * makes use of absl::btree_set to maintain ordered unique neighbors
- * more efficient for moderate number of neighbors compared to vector + sort + unique
- * **/
 template <typename T>
-void abslBtreeSetShared<T>::updateForNewVertex(const Edge& e, bool source)
-{
-    property.push_back(-1);
+void abslBtreeSetShared<T>::processMetaData(const Edge& e, bool source) {
+    bool exists;
+    if(source) exists = e.sourceExists;
+    else exists = e.destExists;
 
-    if (source || (!source && !directed)) {
-        T neighbor;
-        if (source) neighbor.setInfo(e.destination, e.weight);
-        else neighbor.setInfo(e.source, e.weight);
+     // choose vertex id depending on source/destination
+    NodeID v = source ? e.source : e.destination;
 
-        absl::btree_set<T> neighbor_set;
-        neighbor_set.insert(neighbor);
-        out_neighbors.push_back(neighbor_set);
+    bool aff = affected[v];
 
-        if (directed) {
-            // Add empty in_neighbors for this new vertex
-            in_neighbors.emplace_back();
-        }
+    if(!aff){
+        compare_and_swap(affected[v], aff, true);
     }
-    else if (!source && directed) {
-        T neighbor;
-        neighbor.setInfo(e.source, e.weight);
-
-        absl::btree_set<T> neighbor_set;
-        neighbor_set.insert(neighbor);
-        in_neighbors.push_back(neighbor_set);
-        // Add empty out_neighbors for this new vertex
-        out_neighbors.emplace_back();
+    
+    if(exists){       
+        stinger_int64_fetch_add(&num_edges, 1);                 
     }
+    else{
+        stinger_int64_fetch_add(&num_nodes, 1); 
+        stinger_int64_fetch_add(&num_edges, 1);            
+    }  
 }
 
  /** 
@@ -102,8 +90,6 @@ void abslBtreeSetShared<T>::updateForNewVertex(const Edge& e, bool source)
   * and setInfo for updating neighbor information
   * this approach is efficient for moderate number of neighbors
   * **/
-
-
 template <typename T>
 void abslBtreeSetShared<T>::updateForExistingVertex(const Edge& e, bool source)
 {
@@ -111,21 +97,32 @@ void abslBtreeSetShared<T>::updateForExistingVertex(const Edge& e, bool source)
 
     if (source || (!source && !directed)) {
         NodeID dest = source ? e.destination : e.source;
-        T neighbor; neighbor.setInfo(dest, e.weight);
+        T neighbor; 
+        neighbor.setInfo(dest, e.weight);
+
+        // protect this vertex’s adjacency set
+        std::lock_guard<std::mutex> guard(*out_mutex[index]);
         auto& neighbors = out_neighbors[index];
 
+        // find existing
         auto it = neighbors.find(neighbor);
+
         if (it != neighbors.end()) {
+             // Erase old and insert updated version
             T updatedNeighbor = *it;
             updatedNeighbor.setInfo(dest, e.weight);
             neighbors.erase(it);
             neighbors.insert(updatedNeighbor);
         } else {
+             // Insert new neighbor
             neighbors.insert(neighbor);
         }
     }
     else if (!source && directed) {
-        T neighbor; neighbor.setInfo(e.source, e.weight);
+        T neighbor; 
+        neighbor.setInfo(e.source, e.weight);
+
+        std::lock_guard<std::mutex> guard(*in_mutex[index]);
         auto& neighbors = in_neighbors[index];
 
         auto it = neighbors.find(neighbor);
@@ -140,41 +137,35 @@ void abslBtreeSetShared<T>::updateForExistingVertex(const Edge& e, bool source)
     }
 }
 
-/**
- * Process a batch of edges to update the graph
- * For each edge, check and update both source and destination vertices
- * Calls vertexExists to check existence and update counts
- * Calls updateForNewVertex or updateForExistingVertex as needed    
- * **/
 template <typename T>
 void abslBtreeSetShared<T>::update(const EdgeList& el)
 {
-    for (auto it = el.begin(); it != el.end(); ++it) {
-        //Process source vertex
-        bool exists = vertexExists(*it, true);
-        if (!exists) updateForNewVertex(*it, true);
-        else updateForExistingVertex(*it, true);
-        
-        //Process destination vertex
-        bool exists1 = vertexExists(*it, false);
-        if (!exists1) updateForNewVertex(*it, false);
-        else updateForExistingVertex(*it, false);
-    }
+    # pragma omp parallel for 
+    for (unsigned int k = 0; k < el.size(); k ++) {
+        processMetaData(el[k], true);
+        updateForExistingVertex(el[k], true);
+
+        processMetaData(el[k], false);
+        updateForExistingVertex(el[k], false); 
+    }               
 }
 
 template <typename T>
 int64_t abslBtreeSetShared<T>::in_degree(NodeID n)
 {
-    if (directed)
-        return in_neighbors[n].size();
-    else
-        return out_neighbors[n].size();
+    if(directed) {
+        std::lock_guard<std::mutex> guard(*in_mutex[n]);
+	    return in_neighbors[n].size(); }
+    else {
+        std::lock_guard<std::mutex> guard(*out_mutex[n]);
+	    return out_neighbors[n].size(); }
 }
 
 template <typename T>
 int64_t abslBtreeSetShared<T>::out_degree(NodeID n)
 {
-    return out_neighbors[n].size();
+    std::lock_guard<std::mutex> guard(*out_mutex[n]);
+    return out_neighbors[n].size();   
 }
 
 template <typename T>
