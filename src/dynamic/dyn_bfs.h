@@ -145,10 +145,12 @@ void dynBFSAlg(T* ds, NodeID source){
         ds->affected[i] = false;
     }
     t.Stop();   
+    /*
     // Print distances after BFS completes
     for (NodeID n = 0; n < ds->num_nodes; n++) {
         std::cout << "Distance to " << n << ": " << ds->property[n] << std::endl;
     } 
+    */
     ofstream out("Alg.csv", std::ios_base::app);   
     out << t.Seconds() << std::endl;    
     out.close();
@@ -198,11 +200,11 @@ void BFSStartFromScratch(T* ds, NodeID source){
         }
         queue.slide_window();        
     }
-    
+    /*
     for (NodeID n = 0; n < ds->num_nodes; n++) 
     {
         std::cout << "Distance to " << n << ": " << distances[n] << std::endl;
-    }
+    }*/
     t.Stop();    
     ofstream out("Alg.csv", std::ios_base::app);   
     out << t.Seconds() << std::endl;    
