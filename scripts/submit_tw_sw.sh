@@ -8,8 +8,8 @@
 #SBATCH --reservation=Thesis_test_Mennatallah
 #Max wallTime for the job
 #SBATCH -t 7-00:00:00
-#SBATCH --output=submit_CPMA_sw.out
-#SBATCH --error=submit_CPMA_sw.err
+#SBATCH --output=tw_sw.out
+#SBATCH --error=tw_sw.err
 
 # As precaution, clear OMP stuff and remove any alg or update csv files in the folder
 unset OMP_DISPLAY_ENV OMP_NUM_THREADS OMP_PROC_BIND OMP_PLACES
@@ -26,4 +26,4 @@ export OMP_NUM_THREADS=128
 export OMP_PROC_BIND=close
 export OMP_PLACES={0}:128:1
 
-bash $SCRATCH/Masters_thesis/Thesis/SAGA-Bench/scripts/CPMA_sw_test.sh
+bash $SCRATCH/Masters_thesis/Thesis/SAGA-Bench/scripts/tw_logarithmic_fixed_batch_number.sh
