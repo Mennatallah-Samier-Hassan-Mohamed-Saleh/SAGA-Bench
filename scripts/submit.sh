@@ -1,15 +1,13 @@
 #!/bin/bash
 
-#Define the resource requirements here using #SBATCH
-
 #For requesting 128 CPUs
 #SBATCH -c 128
 #SBATCH --exclusive
 #SBATCH --reservation=Thesis_test_Mennatallah
 #Max wallTime for the job
-#SBATCH -t 24:00:00
-#SBATCH --output=submit.out
-#SBATCH --error=submit.err
+#SBATCH -t 7-00:00:00
+##SBATCH --output=single_fs_run.out
+##SBATCH --error=single_fs_run.err
 
 # As precaution, clear OMP stuff and remove any alg or update csv files in the folder
 unset OMP_DISPLAY_ENV OMP_NUM_THREADS OMP_PROC_BIND OMP_PLACES
@@ -28,4 +26,7 @@ export OMP_PLACES={0}:128:1
 
 cd $SCRATCH/Masters_thesis/Thesis/SAGA-Bench
 
-./frontEnd -d 1 -w 0 -f $SCRATCH/datasets/SAGAdatasets/wiki-topcats.shuffle.t.w.csv -b 500000 -s degAwareRHH -n 1791489 -a bfsdyn -t 128 | tee -a original.log
+#Running the front end with bfsdyn algorithm on fs dataset
+./frontEnd -d 1 -w 0 -f /scratch/ms13779/datasets/SAGAdatasets/fs.shuffle.t.w.csv -b 1 -s adListChunked -n 124836180 -a bfsdyn -t 128 -i 3612134260 
+cp Update.csv fs_single_run_Update.csv
+cp Alg.csv fs_single_run_Alg.csv
