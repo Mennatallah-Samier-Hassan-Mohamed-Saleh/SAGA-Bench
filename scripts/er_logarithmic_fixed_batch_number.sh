@@ -8,7 +8,7 @@ rm Update*.csv
 dataDir=$SCRATCH/datasets/SAGAdatasets/
 sagaDir=$SCRATCH/Masters_thesis/Thesis/SAGA-Bench/
 
-STRUCTURES=(adListChunked adListShared degAwareRHH stinger abslBtreeSetShared)
+STRUCTURES=(adListChunked adListShared stinger abslBtreeSetShared)
 NumberBatches=10
 #Define the batch sizes to be used as a logaraithmic scale
 # The first batch size is 1, the second is 10, the third is 100, and so on.
