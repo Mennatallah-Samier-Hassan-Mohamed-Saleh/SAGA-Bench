@@ -34,7 +34,7 @@ export OMP_NUM_THREADS=128
 export OMP_PROC_BIND=close
 export OMP_PLACES={0}:128:1
 
-cd $SCRATCH/Masters_thesis/Thesis/SAGA-Bench
+cd $SCRATCH/Masters_thesis/Thesis/Integrate_PIGO_SAGA-Bench/SAGA-Bench
 
 #Testing bfsfromscratch on different data structures for slashdot dataset
 echo "Starting bfsfromscratch tests on adList for slashdot dataset"

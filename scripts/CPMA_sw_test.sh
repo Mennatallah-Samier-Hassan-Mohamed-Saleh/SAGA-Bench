@@ -5,7 +5,7 @@ rm Update*.csv
 
 #Needed Paths
 dataDir=/scratch/ms13779/datasets/SAGAdatasets/
-sagaDir=$SCRATCH/Masters_thesis/Thesis/SAGA-Bench
+sagaDir=$SCRATCH/Masters_thesis/Thesis/Integrate_PIGO_SAGA-Bench/SAGA-Bench
 
 # Define the data structures to be used and other parameters
 STRUCTURES=(adList adListChunked adListShared degAwareRHH stinger abslBtreeSet abslBtreeSetShared)

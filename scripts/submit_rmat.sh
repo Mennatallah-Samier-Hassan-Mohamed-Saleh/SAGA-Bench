@@ -17,7 +17,7 @@ conda activate rmat_setup
 
 #Needed Paths
 dataDir=$SCRATCH/datasets/SAGAdatasets/
-sagaDir=$SCRATCH/Masters_thesis/Thesis/SAGA-Bench
+sagaDir=$SCRATCH/Masters_thesis/Thesis/Integrate_PIGO_SAGA-Bench/SAGA-Bench
 
 #Generating the RMAT dataset
 python ${sagaDir}/scripts/rmat_generator.py ${dataDir}/rmat.txt

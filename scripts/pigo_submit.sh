@@ -1,15 +1,13 @@
 #!/bin/bash
 
-#Define the resource requirements here using #SBATCH
-
 #For requesting 128 CPUs
 #SBATCH -c 128
 #SBATCH --exclusive
 #SBATCH --reservation=Thesis_test_Mennatallah
 #Max wallTime for the job
 #SBATCH -t 7-00:00:00
-#SBATCH --output=tw_sw.out
-#SBATCH --error=tw_sw.err
+##SBATCH --output=single_fs_run_pigo.out
+##SBATCH --error=single_fs_run_pigo.err
 
 # As precaution, clear OMP stuff and remove any alg or update csv files in the folder
 unset OMP_DISPLAY_ENV OMP_NUM_THREADS OMP_PROC_BIND OMP_PLACES
@@ -26,4 +24,9 @@ export OMP_NUM_THREADS=128
 export OMP_PROC_BIND=close
 export OMP_PLACES={0}:128:1
 
-bash $SCRATCH/Masters_thesis/Thesis/Integrate_PIGO_SAGA-Bench/SAGA-Bench/scripts/tw_logarithmic_fixed_batch_number.sh
+cd /scratch/ms13779/Masters_thesis/Thesis/Integrate_PIGO_SAGA-Bench/SAGA-Bench
+
+#Running the front end with bfsdyn algorithm on fs dataset
+./frontEnd -d 1 -w 0 -f /scratch/ms13779/Masters_thesis/Thesis/Integrate_PIGO_SAGA-Bench/SAGA-Bench/include/fs.csv -b 1 -s adListChunked -n 124836180 -a bfsdyn -t 128 -i 3612134260 
+cp Update.csv fs_single_run_Update.csv
+cp Alg.csv fs_single_run_Alg.csv

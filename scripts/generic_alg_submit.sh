@@ -34,7 +34,7 @@ export OMP_NUM_THREADS=1
 module purge
 module load gcc cmake perl python libGl libx11 fontconfig mesa
 
-cd $SCRATCH/Masters_thesis/Thesis/SAGA-Bench
+cd $SCRATCH/Masters_thesis/Thesis/Integrate_PIGO_SAGA-Bench/SAGA-Bench
 
 # =======================
 # Test dataset

@@ -26,4 +26,4 @@ export OMP_NUM_THREADS=128
 export OMP_PROC_BIND=close
 export OMP_PLACES={0}:128:1
 
-bash $SCRATCH/Masters_thesis/Thesis/SAGA-Bench/scripts/CPMA_sw_test.sh
+bash $SCRATCH/Masters_thesis/Thesis/Integrate_PIGO_SAGA-Bench/SAGA-Bench/scripts/CPMA_sw_test.sh

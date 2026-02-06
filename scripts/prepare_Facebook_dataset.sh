@@ -2,7 +2,7 @@
 
 #Needed Paths
 dataDir=$SCRATCH/datasets/SAGAdatasets/
-sagaDir=$SCRATCH/Masters_thesis/Thesis/SAGA-Bench
+sagaDir=$SCRATCH/Masters_thesis/Thesis/Integrate_PIGO_SAGA-Bench/SAGA-Bench
 
 #Defining datasets
 DATASETS=(facebook_combined       
