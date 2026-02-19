@@ -5,6 +5,7 @@
 #include <fstream>
 
 #include "types.h"
+#include "../common/timer.h"
 
 using namespace std;
 
@@ -83,6 +84,47 @@ EdgeList readBatchFromCSV(ifstream& in, int batchSize, int batch_id, bool weight
             if(edgecount == batchSize) break;   
         }             
     }            
+    return el;
+}
+
+EdgeList readBatchFromEdgelist(
+    const vector<Edge>& edgelist,
+    size_t& current_index,
+    int batchSize,
+    int batch_id,
+    MapTable& VMap,
+    NodeID& lastAssignedLogicalID)
+{
+    EdgeList el;
+    
+    // Check if we've processed all edges
+    if (current_index >= edgelist.size()) {
+        return el;  // Return empty list
+    }
+    
+    // Calculate how many edges to read in this batch
+    size_t edges_to_read = min((size_t)batchSize, edgelist.size() - current_index);
+    
+    cout<<"Reading batch " << batch_id << " with " << edges_to_read << " edges." << endl;
+    Timer t;
+    t.Start();
+    for (size_t i = 0; i < edges_to_read; i++) {
+        Edge e = edgelist[current_index + i];  // Copy the edge
+        
+        // Assign logical IDs and update existence flags
+        bool srcExists = assignLogicalID(e.source, VMap, lastAssignedLogicalID);
+        bool dstExists = assignLogicalID(e.destination, VMap, lastAssignedLogicalID);
+        
+        e.sourceExists = srcExists;
+        e.destExists = dstExists;
+        e.batch_id = batch_id;
+        
+        el.push_back(e);
+    }
+    t.Stop();
+    cout << "Time to process batch " << batch_id << ": " << t.Seconds() << " seconds" << endl;
+    current_index += edges_to_read;
+    
     return el;
 }
 #endif  // FILEREADER_H_
