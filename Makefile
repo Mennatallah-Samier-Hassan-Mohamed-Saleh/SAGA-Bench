@@ -1,6 +1,8 @@
 # Compiler and flags
 CXX = g++
-CXXFLAGS = -O2 -Wall -Wextra -pedantic -std=c++17 -fopenmp
+#CXXFLAGS = -O2 -Wall -Wextra -pedantic -std=c++17 -fopenmp
+CXXFLAGS = -O3 -march=native -g -pg -Wall -Wextra -pedantic -std=c++17 -fopenmp
+
 
 # Directories
 ABSEIL_DIR := external/abseil-cpp
@@ -47,11 +49,11 @@ $(OBJ_DIR)/$(DYN_PREFIX)%.o : $(UTL_DIR)/%.cc $(DYN_HDR)
 
 # errorExtractor target (single file)
 $(BIN_DIR)/errorExtractor : errorExtractor.cc
-	$(CXX) $(CXXFLAGS) $< -o $@
+	$(CXX) $(CXXFLAGS)  -pg $< -o $@
 
 # frontEnd target links all objects (Abseil used as header-only)
 frontEnd : $(ALL_OBJ)
-	$(CXX) $(CXXFLAGS) $^ -o $@
+	$(CXX) $(CXXFLAGS) -pg $^ -o $@
 
 clean:
 	rm -f $(BIN_DIR)/*
