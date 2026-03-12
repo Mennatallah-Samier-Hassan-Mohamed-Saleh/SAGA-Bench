@@ -5,6 +5,7 @@
 #include <iostream>
 #include <limits>
 #include <map>
+#include <unordered_map>
 #include <queue>
 #include <vector>
 
@@ -13,7 +14,7 @@
 typedef int64_t NodeID;
 typedef int64_t Weight;
 typedef int PID;
-typedef std::map<NodeID, NodeID> MapTable;
+typedef std::unordered_map<NodeID, NodeID> MapTable;
 static const int32_t kRandSeed = 27491095;
 const float kDistInf = std::numeric_limits<float>::max() / 2;
 const size_t kMaxBin = std::numeric_limits<size_t>::max() / 2;

@@ -1,7 +1,7 @@
 # Compiler and flags
 CXX = g++
-#CXXFLAGS = -O2 -Wall -Wextra -pedantic -std=c++17 -fopenmp
-CXXFLAGS = -O3 -march=native -g -fno-omit-frame-pointer -Wall -Wextra -pedantic -std=c++17 -fopenmp
+CXXFLAGS = -O2 -Wall -Wextra -pedantic -std=c++17 -fopenmp
+#CXXFLAGS = -O3 -march=native -g -fno-omit-frame-pointer -Wall -Wextra -pedantic -std=c++17 -fopenmp
 
 
 # Directories
