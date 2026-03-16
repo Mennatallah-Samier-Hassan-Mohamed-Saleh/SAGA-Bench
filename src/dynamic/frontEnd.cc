@@ -61,8 +61,9 @@ int main(int argc, char* argv[])
     /*Step 3: Shuffle the edge list in memory. */
     cout << "Shuffling edges..." << endl;
     t.Start();
-    random_device rd;
-    mt19937 rng(rd());
+    //random_device rd;
+    //mt19937 rng(rd());
+    mt19937 rng(42); // Fixed seed for reproducibility
     shuffle(edgelist.begin(), edgelist.end(), rng);
     t.Stop();
     cout << "Time to shuffle edges: " << t.Seconds() << " seconds" << endl;
