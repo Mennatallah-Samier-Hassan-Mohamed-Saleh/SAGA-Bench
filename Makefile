@@ -16,7 +16,9 @@ INCLUDES = -I$(ABSEIL_DIR) -I$(DYN_DIR) -I$(UTL_DIR) -I$(PIGO_DIR)
 CXXFLAGS += $(INCLUDES)
 
 # Source files
-DYN_SRC_CC := $(wildcard $(DYN_DIR)/*.cc)
+#DYN_SRC_CC := $(wildcard $(DYN_DIR)/*.cc)
+#exclude builder.cc since dequeAndInsertEdge is no longer used
+DYN_SRC_CC := $(filter-out $(DYN_DIR)/builder.cc, $(wildcard $(DYN_DIR)/*.cc))
 DYN_SRC_C := $(wildcard $(DYN_DIR)/*.c)
 UTL_SRC_CC := $(wildcard $(UTL_DIR)/*.cc)
 DYN_HDR := $(wildcard $(DYN_DIR)/*.h) $(wildcard $(UTL_DIR)/*.h)

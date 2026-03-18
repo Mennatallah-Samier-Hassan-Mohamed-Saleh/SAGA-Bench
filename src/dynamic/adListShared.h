@@ -40,7 +40,7 @@ class adListShared: public dataStruc {
 
 template <typename T>
 adListShared<T>::adListShared(bool w, bool d, int64_t _num_nodes): dataStruc(w, d), num_nodes_initialize(_num_nodes){    
-
+    num_nodes_max = _num_nodes;
     // initialize 1) property 2) affected 3) vertices vectors 4) mutex
     property.resize(num_nodes_initialize, -1);    
     affected.resize(num_nodes_initialize); affected.fill(false);

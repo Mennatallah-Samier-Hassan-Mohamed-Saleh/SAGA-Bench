@@ -13,7 +13,7 @@
 template<typename T> 
 void BFSIter0(T* ds, SlidingQueue<NodeID>& queue){
     std::cout << "BFS Iteration 0" << std::endl;  
-    pvector<bool> visited(ds->num_nodes, false);     
+    pvector<bool> visited(ds->num_nodes_max, false);     
   
     #pragma omp parallel     
     {
@@ -93,7 +93,7 @@ void dynBFSAlg(T* ds, NodeID source){
     Timer t;
     t.Start();
     
-    SlidingQueue<NodeID> queue(ds->num_nodes);         
+    SlidingQueue<NodeID> queue(ds->num_nodes_max);         
     if(ds->property[source] == -1) ds->property[source] = 0;
     
     BFSIter0(ds, queue);
@@ -101,7 +101,7 @@ void dynBFSAlg(T* ds, NodeID source){
     
     while(!queue.empty()){             
         //std::cout << "Queue not empty, Queue size: " << queue.size() << std::endl;
-        pvector<bool> visited(ds->num_nodes, false); 
+        pvector<bool> visited(ds->num_nodes_max, false); 
 
         #pragma omp parallel
         {
@@ -172,7 +172,7 @@ void BFSStartFromScratch(T* ds, NodeID source){
 
     ds->property[source] = 0;    
 
-    SlidingQueue<NodeID> queue(ds->num_nodes);   
+    SlidingQueue<NodeID> queue(ds->num_nodes_max);   
     queue.push_back(source);
     queue.slide_window();  
     //std::cout << "Queue not empty, Queue size: " << queue.size() << std::endl;  

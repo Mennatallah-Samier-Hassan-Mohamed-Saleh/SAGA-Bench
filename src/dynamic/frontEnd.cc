@@ -4,13 +4,12 @@
 #include <mutex>
 #include <thread>
 
-#include "builder.h"
-#include "fileReader.h"
 #include "topDataStruc.h"
 #include "parser.h"
 #include "pigo.hpp"
 #include "../common/timer.h"
 #include <random>
+#include "topAlg.h"
 
 using namespace pigo;
 /* Main thread that launches everything else */
@@ -30,8 +29,8 @@ int main(int argc, char* argv[])
 
     /*Step 2: Change CSR to Edge List*/
     cout << "Converting to edgelist format..." << endl;
-    vector<Edge> edgelist;
-    edgelist.reserve(g.m());
+    EdgeList allEdges;
+    allEdges.reserve(g.m());
 
     bool weighted = opts.weighted;
     t.Start();
@@ -40,26 +39,88 @@ int main(int argc, char* argv[])
             Edge e;
             e.source      = u;
             e.destination = v;
-            e.weight      = weighted ? 1.0 : 0.0;  // default weight; replace if real weights available
-            e.sourceExists = true;   // nodes exist since we're loading from a complete graph
-            e.destExists   = true;
-            edgelist.push_back(e);
+            e.weight      = weighted ? 1.0 : 0.0;  
+           // e.sourceExists = true;   
+            //e.destExists   = true;
+            allEdges.push_back(e);
         }
     }
     t.Stop();
 
     cout << "Time to convert to edgelist: " << t.Seconds() << " seconds" << endl;
-    cout << "Results in: " << edgelist.size() << " edges" << endl;
+    cout << "Results in: " << allEdges.size() << " edges" << endl;
 
     /*Step 3: Shuffle the edge list in memory. */
     cout << "Shuffling edges..." << endl;
     t.Start();
     mt19937 rng(42);
-    shuffle(edgelist.begin(), edgelist.end(), rng);
+    shuffle(allEdges.begin(), allEdges.end(), rng);
     t.Stop();
     cout << "Time to shuffle edges: " << t.Seconds() << " seconds" << endl;
     cout << "Shuffle complete" << endl;
+ 
+    /*Solution 1: Re-assign exists flags after shuffle */
+    vector<bool> nodeSeen(g.n(), false); 
+    for (auto& e : allEdges) {
+        e.sourceExists = nodeSeen[e.source];
+        e.destExists   = nodeSeen[e.destination];
+        nodeSeen[e.source] = true;
+        nodeSeen[e.destination] = true;
+    }
 
+    /*Step 4: Create data structure and algorithm */
+    dataStruc* struc = createDataStruc(opts.type, opts.weighted, opts.directed, opts.num_nodes, opts.num_threads);   
+    Algorithm alg(opts.algorithm, struc, opts.type);
+
+    /*Step 5: Slice into batches, update, and run algorithm inline */
+    int64_t start_batch_size = (opts.initial_batch_size != 0) ? opts.initial_batch_size : opts.batch_size;
+    int batch_id = 0;
+    size_t offset = 0;
+    size_t total = allEdges.size();
+    
+    while (offset < total)
+        {
+            int64_t current_batch_size = (batch_id == 0) ? start_batch_size : opts.batch_size;
+            size_t end = std::min(offset + (size_t)current_batch_size, total);
+
+            // Slice batch from allEdges
+            EdgeList el(allEdges.begin() + offset, allEdges.begin() + end);
+
+            // Debug: check edge IDs in this batch
+            NodeID maxSrc = 0, maxDst = 0;
+            for (const auto& e : el) {
+                maxSrc = std::max(maxSrc, e.source);
+                maxDst = std::max(maxDst, e.destination);
+            }
+            cout << "Batch " << batch_id 
+                << " size=" << el.size()
+                << " maxSrc=" << maxSrc 
+                << " maxDst=" << maxDst 
+                << " struc->num_nodes=" << struc->num_nodes 
+                << endl;
+            
+            // Update data structure
+            t.Start();
+            struc->update(el);
+            t.Stop();
+
+            ofstream out("Update.csv", std::ios_base::app);
+            out << t.Seconds() << endl;
+            out.close();
+
+            cout << "Updated batch: " << batch_id << endl;
+
+            // Run algorithm on updated graph
+            alg.performAlg();
+
+            offset = end;
+            batch_id++;
+    }
+
+    cout << "Total batches processed: " << batch_id << endl;
+    struc->print();
+}
+    /*
     ifstream file(opts.filename);
     if (!file.is_open()) {
         cout << "Couldn't open file " << opts.filename << endl;
@@ -123,3 +184,4 @@ int main(int argc, char* argv[])
     //cout << "Done printing queues " << endl;    
     struc->print();
 }
+*/

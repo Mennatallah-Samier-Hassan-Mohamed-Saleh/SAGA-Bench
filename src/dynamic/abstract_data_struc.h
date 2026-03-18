@@ -11,6 +11,7 @@ class dataStruc {
 public:        
     int64_t num_nodes = 0;
     int64_t num_edges = 0; 
+    int64_t num_nodes_max =0;
     bool weighted;
     bool directed;
     std::vector<float> property;
