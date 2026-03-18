@@ -26,4 +26,11 @@ export OMP_NUM_THREADS=128
 export OMP_PROC_BIND=close
 export OMP_PLACES={0}:128:1
 
-bash $SCRATCH/Masters_thesis/Thesis/SAGA-Bench/scripts/CPMA_sw_test.sh
+# 1. Find the directory where THIS script lives
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
+
+# 2. Get the absolute path of the parent (SAGA-Bench)
+# This goes up one level from 'scripts/'
+export sagaDir=$(realpath "$SCRIPT_DIR/..")
+
+bash $sagaDir/scripts/CPMA_sw_test.sh

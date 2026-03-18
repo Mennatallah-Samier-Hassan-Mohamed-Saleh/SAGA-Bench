@@ -34,7 +34,16 @@ export OMP_NUM_THREADS=128
 export OMP_PROC_BIND=close
 export OMP_PLACES={0}:128:1
 
-cd $SCRATCH/Masters_thesis/Thesis/SAGA-Bench
+# 1. Find the directory where THIS script lives
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
+
+# 2. Get the absolute path of the parent (SAGA-Bench)
+# This goes up one level from 'scripts/'
+export PROJECT_ROOT=$(realpath "$SCRIPT_DIR/..")
+
+# 3. Move into it
+cd "$PROJECT_ROOT" || exit
+echo "Successfully moved to PROJECT_ROOT: $PWD"
 
 #Testing bfsfromscratch on different data structures for slashdot dataset
 echo "Starting bfsfromscratch tests on adList for slashdot dataset"

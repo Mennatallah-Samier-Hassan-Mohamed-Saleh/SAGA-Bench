@@ -24,7 +24,16 @@ export OMP_NUM_THREADS=128
 export OMP_PROC_BIND=close
 export OMP_PLACES={0}:128:1
 
-cd $SCRATCH/Masters_thesis/Thesis/SAGA-Bench
+# 1. Find the directory where THIS script lives
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
+
+# 2. Get the absolute path of the parent (SAGA-Bench)
+# This goes up one level from 'scripts/'
+export sagaDir=$(realpath "$SCRIPT_DIR/..")
+
+# 3. Move into it
+cd "$sagaDir" || exit
+echo "Successfully moved to sagaDir: $PWD"
 
 #Running the front end with bfsdyn algorithm on fs dataset
 ./frontEnd -d 1 -w 0 -f /scratch/ms13779/datasets/SAGAdatasets/fs.shuffle.t.w.csv -b 1 -s adListChunked -n 124836180 -a bfsdyn -t 128 -i 3612134260 

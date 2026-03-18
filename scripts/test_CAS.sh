@@ -31,7 +31,16 @@ export OMP_PLACES={0}:128:1
 module purge
 module load gcc cmake perl python libGl libx11 fontconfig mesa
 
-cd $SCRATCH/Masters_thesis/Thesis/SAGA-Bench
+# 1. Find the directory where THIS script lives
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
+
+# 2. Get the absolute path of the parent (SAGA-Bench)
+# This goes up one level from 'scripts/'
+export sagaDir=$(realpath "$SCRIPT_DIR/..")
+
+# 3. Move into it
+cd "$sagaDir" || exit
+echo "Successfully moved to sagaDir: $PWD"
 
 #Testing bfsdyn on stinger data structures for test.csv
 for (( i=1; i<=5; i++ )); do

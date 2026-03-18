@@ -6,7 +6,6 @@ rm Update*.csv
 
 #Needed Paths
 dataDir=$SCRATCH/datasets/SAGAdatasets/
-sagaDir=$SCRATCH/Masters_thesis/Thesis/SAGA-Bench/
 
 STRUCTURES=(adListChunked adListShared degAwareRHH stinger abslBtreeSetShared)
 NumberBatches=10
@@ -34,7 +33,16 @@ DATASETS=(
         [tw.shuffle.t.w.csv]=61578415
 )
 
-cd $sagaDir
+# 1. Find the directory where THIS script lives
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
+
+# 2. Get the absolute path of the parent (SAGA-Bench)
+# This goes up one level from 'scripts/'
+export sagaDir=$(realpath "$SCRIPT_DIR/..")
+
+# 3. Move into it
+cd "$sagaDir" || exit
+echo "Successfully moved to sagaDir: $PWD"
 runs=${RUNS}
 while [ $runs -gt 0 ]
 do 

@@ -34,7 +34,16 @@ export OMP_NUM_THREADS=1
 module purge
 module load gcc cmake perl python libGl libx11 fontconfig mesa
 
-cd $SCRATCH/Masters_thesis/Thesis/SAGA-Bench
+# 1. Find the directory where THIS script lives
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
+
+# 2. Get the absolute path of the parent (SAGA-Bench)
+# This goes up one level from 'scripts/'
+export PROJECT_ROOT=$(realpath "$SCRIPT_DIR/..")
+
+# 3. Move into it
+cd "$PROJECT_ROOT" || exit
+echo "Successfully moved to PROJECT_ROOT: $PWD"
 
 #Testing ccdyn on different data structures for slashdot dataset
 echo "Starting ccdyn tests on adList for slashdot dataset"

@@ -2,7 +2,12 @@
 
 #Needed Paths
 dataDir=$SCRATCH/datasets/SAGAdatasets/
-sagaDir=$SCRATCH/Masters_thesis/Thesis/SAGA-Bench
+# 1. Find the directory where THIS script lives
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
+
+# 2. Get the absolute path of the parent (SAGA-Bench)
+# This goes up one level from 'scripts/'
+export sagaDir=$(realpath "$SCRIPT_DIR/..")
 
 #Defining datasets
 DATASETS=(facebook_combined       

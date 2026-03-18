@@ -1,15 +1,13 @@
 #!/bin/bash
 
-#Define the resource requirements here using #SBATCH
-
 #For requesting 128 CPUs
 #SBATCH -c 128
 #SBATCH --exclusive
 #SBATCH --reservation=Thesis_test_Mennatallah
 #Max wallTime for the job
 #SBATCH -t 7-00:00:00
-#SBATCH --output=fs_sw.out
-#SBATCH --error=fs_sw.err
+##SBATCH --output=single_run.out
+##SBATCH --error=single_run.err
 
 # As precaution, clear OMP stuff and remove any alg or update csv files in the folder
 unset OMP_DISPLAY_ENV OMP_NUM_THREADS OMP_PROC_BIND OMP_PLACES
@@ -33,4 +31,11 @@ SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 # This goes up one level from 'scripts/'
 export sagaDir=$(realpath "$SCRIPT_DIR/..")
 
-bash $sagaDir/scripts/fs_logarithmic_fixed_batch_number.sh
+# 3. Move into it
+cd "$sagaDir" || exit
+echo "Successfully moved to sagaDir: $PWD"
+
+#Running the front end with bfsdyn algorithm on fs dataset
+./frontEnd -d 0 -w 0 -f /scratch/ms13779/datasets/SAGAdatasets/facebook.csv -b 1522 -s adListShared -n 4093 -a bfsdyn -t 128
+cp Update.csv single_run_Update.csv
+cp Alg.csv single_run_Alg.csv

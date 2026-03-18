@@ -13,4 +13,11 @@
 module purge
 module load gcc cmake perl python libGl libx11 fontconfig mesa
 
-bash $SCRATCH/Masters_thesis/Thesis/SAGA-Bench/scripts/prepare_CPMA_dataset.sh
+# 1. Find the directory where THIS script lives
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
+
+# 2. Get the absolute path of the parent (SAGA-Bench)
+# This goes up one level from 'scripts/'
+export sagaDir=$(realpath "$SCRIPT_DIR/..")
+
+bash $sagaDir/scripts/prepare_CPMA_dataset.sh
