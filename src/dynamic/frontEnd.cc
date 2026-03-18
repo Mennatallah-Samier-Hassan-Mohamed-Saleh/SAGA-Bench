@@ -10,6 +10,7 @@
 #include "parser.h"
 #include "pigo.hpp"
 #include "../common/timer.h"
+#include <random>
 
 using namespace pigo;
 /* Main thread that launches everything else */
@@ -18,7 +19,7 @@ int main(int argc, char* argv[])
 {    
     cmd_args opts = parse(argc, argv);
 
-    /*Step 1: Graph reading */
+  /*Step 1: Graph reading */
    Timer t;
    t.Start();
    Graph g{opts.filename};
@@ -27,32 +28,37 @@ int main(int argc, char* argv[])
    cout << "number of vertices: " << g.n() << endl;
    cout << "number of edges: " << g.m() << endl;
 
+    /*Step 2: Change CSR to Edge List*/
+    cout << "Converting to edgelist format..." << endl;
+    vector<Edge> edgelist;
+    edgelist.reserve(g.m());
 
-   // Open output file for edgelist
-   ofstream outfile("pigo.csv");
-   if (!outfile.is_open())
-   {
-       cerr << "Error: Could not open output file " << "pigo.csv" << endl;
-       return 1;
-   }
+    bool weighted = opts.weighted;
+    t.Start();
+    for (uint32_t u = 0; u < g.n(); u++) {
+        for (auto v : g.neighbors(u)) {
+            Edge e;
+            e.source      = u;
+            e.destination = v;
+            e.weight      = weighted ? 1.0 : 0.0;  // default weight; replace if real weights available
+            e.sourceExists = true;   // nodes exist since we're loading from a complete graph
+            e.destExists   = true;
+            edgelist.push_back(e);
+        }
+    }
+    t.Stop();
 
+    cout << "Time to convert to edgelist: " << t.Seconds() << " seconds" << endl;
+    cout << "Results in: " << edgelist.size() << " edges" << endl;
 
-   // Convert CSR to edgelist
-   cout << "Converting to edgelist format..." << endl;
-
-
-   // Iterate through all vertices
-   for (uint32_t u = 0; u < g.n(); u++)
-   {
-       for (auto v : g.neighbors(u))
-       {
-           outfile << u << " " << v << "\n";
-       }
-   }
-
-
-   outfile.close();
-   cout << "Edgelist written to " << "pigo.csv" << endl;
+    /*Step 3: Shuffle the edge list in memory. */
+    cout << "Shuffling edges..." << endl;
+    t.Start();
+    mt19937 rng(42);
+    shuffle(edgelist.begin(), edgelist.end(), rng);
+    t.Stop();
+    cout << "Time to shuffle edges: " << t.Seconds() << " seconds" << endl;
+    cout << "Shuffle complete" << endl;
 
     ifstream file(opts.filename);
     if (!file.is_open()) {
