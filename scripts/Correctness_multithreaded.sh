@@ -24,14 +24,11 @@ export OMP_NUM_THREADS=128
 export OMP_PROC_BIND=close
 export OMP_PLACES={0}:128:1
 
-# 1. Find the directory where THIS script lives
-SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
+# 1. Capture the directory where you submitted the job (SAGA-Bench)
+# This replaces the BASH_SOURCE logic which fails in Slurm
+export sagaDir=$SLURM_SUBMIT_DIR
 
-# 2. Get the absolute path of the parent (SAGA-Bench)
-# This goes up one level from 'scripts/'
-export sagaDir=$(realpath "$SCRIPT_DIR/..")
-
-# 3. Move into it
+# 2. Move to the directory first so the 'rm' and 'frontEnd' work correctly
 cd "$sagaDir" || exit
 echo "Successfully moved to sagaDir: $PWD"
 
