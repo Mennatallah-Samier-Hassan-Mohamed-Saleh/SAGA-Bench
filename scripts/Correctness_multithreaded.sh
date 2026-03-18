@@ -33,6 +33,6 @@ cd "$sagaDir" || exit
 echo "Successfully moved to sagaDir: $PWD"
 
 #Running the front end with bfsdyn algorithm on fs dataset
-./frontEnd -d 0 -w 0 -f /scratch/ms13779/datasets/SAGAdatasets/facebook.csv -b 1522 -s adListShared -n 4093 -a bfsdyn -t 128
+./frontEnd -d 0 -w 0 -f /scratch/ms13779/datasets/SAGAdatasets/facebook.csv -b 1522 -s adListShared -n 4039 -a bfsdyn -t 128 
 cp Update.csv single_run_Update.csv
 cp Alg.csv single_run_Alg.csv
