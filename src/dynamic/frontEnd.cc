@@ -8,12 +8,52 @@
 #include "fileReader.h"
 #include "topDataStruc.h"
 #include "parser.h"
+#include "pigo.hpp"
+#include "../common/timer.h"
 
+using namespace pigo;
 /* Main thread that launches everything else */
 
 int main(int argc, char* argv[])
 {    
     cmd_args opts = parse(argc, argv);
+
+    /*Step 1: Graph reading */
+   Timer t;
+   t.Start();
+   Graph g{opts.filename};
+   t.Stop();
+   cout << "Time to load graph: " << t.Seconds() << " seconds" << endl;
+   cout << "number of vertices: " << g.n() << endl;
+   cout << "number of edges: " << g.m() << endl;
+
+
+   // Open output file for edgelist
+   ofstream outfile("pigo.csv");
+   if (!outfile.is_open())
+   {
+       cerr << "Error: Could not open output file " << "pigo.csv" << endl;
+       return 1;
+   }
+
+
+   // Convert CSR to edgelist
+   cout << "Converting to edgelist format..." << endl;
+
+
+   // Iterate through all vertices
+   for (uint32_t u = 0; u < g.n(); u++)
+   {
+       for (auto v : g.neighbors(u))
+       {
+           outfile << u << " " << v << "\n";
+       }
+   }
+
+
+   outfile.close();
+   cout << "Edgelist written to " << "pigo.csv" << endl;
+
     ifstream file(opts.filename);
     if (!file.is_open()) {
         cout << "Couldn't open file " << opts.filename << endl;
