@@ -9,9 +9,10 @@ DYN_DIR := src/dynamic
 UTL_DIR := src/common
 OBJ_DIR := obj
 BIN_DIR := bin
+PIGO_DIR := include
 
 # Includes
-INCLUDES = -I$(ABSEIL_DIR) -I$(DYN_DIR) -I$(UTL_DIR)
+INCLUDES = -I$(ABSEIL_DIR) -I$(DYN_DIR) -I$(UTL_DIR) -I$(PIGO_DIR)
 CXXFLAGS += $(INCLUDES)
 
 # Source files
