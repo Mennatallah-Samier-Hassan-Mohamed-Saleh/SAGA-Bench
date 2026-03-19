@@ -87,6 +87,7 @@ int main(int argc, char* argv[])
             EdgeList el(allEdges.begin() + offset, allEdges.begin() + end);
 
             // Debug: check edge IDs in this batch
+            /*
             NodeID maxSrc = 0, maxDst = 0;
             for (const auto& e : el) {
                 maxSrc = std::max(maxSrc, e.source);
@@ -98,7 +99,8 @@ int main(int argc, char* argv[])
                 << " maxDst=" << maxDst 
                 << " struc->num_nodes=" << struc->num_nodes 
                 << endl;
-            
+            */
+           
             // Update data structure
             t.Start();
             struc->update(el);
