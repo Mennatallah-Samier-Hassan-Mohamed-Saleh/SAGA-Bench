@@ -175,11 +175,13 @@ cmd_args parse(int argc, char *argv[])
         printUsage();
         exit(0);
     }    
-    if ((args.num_nodes == 0) /*&& (args.type == "stinger")*/) {
+	/*
+    if ((args.num_nodes == 0)) {
 	std::cout << "ERROR! Every data structure requires max number of nodes to be specified" << std::endl;
 	printUsage();
 	exit(-1);
     }
+	*/
 
     std::array<std::string, 4> reqs = {
 	"ssspdyn", "ssspfromscratch", "sswpdyn", "sswpfromscratch"};

@@ -69,7 +69,7 @@ int main(int argc, char* argv[])
     }
 
     /*Step 4: Create data structure and algorithm */
-    dataStruc* struc = createDataStruc(opts.type, opts.weighted, opts.directed, opts.num_nodes, opts.num_threads);   
+    dataStruc* struc = createDataStruc(opts.type, opts.weighted, opts.directed, g.n(), opts.num_threads);   
     Algorithm alg(opts.algorithm, struc, opts.type);
 
     /*Step 5: Slice into batches, update, and run algorithm inline */
