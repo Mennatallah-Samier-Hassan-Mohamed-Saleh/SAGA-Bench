@@ -26,7 +26,6 @@ class adListShared: public dataStruc {
       void processMetaData(const Edge& e, bool source);     
 
       std::vector<std::unique_ptr<std::mutex>> in_mutex, out_mutex;
-      int64_t num_nodes_initialize;
       
     public:  
       std::vector<std::vector<T>> out_neighbors;
@@ -39,19 +38,18 @@ class adListShared: public dataStruc {
 };
 
 template <typename T>
-adListShared<T>::adListShared(bool w, bool d, int64_t _num_nodes): dataStruc(w, d), num_nodes_initialize(_num_nodes){    
-    num_nodes_max = _num_nodes;
+adListShared<T>::adListShared(bool w, bool d, int64_t _num_nodes): dataStruc(w, d, _num_nodes){    
     // initialize 1) property 2) affected 3) vertices vectors 4) mutex
-    property.resize(num_nodes_initialize, -1);    
-    affected.resize(num_nodes_initialize); affected.fill(false);
+    property.resize(num_nodes_max, -1);    
+    affected.resize(num_nodes_max); affected.fill(false);
    
-    out_neighbors.resize(num_nodes_initialize);    
-    in_neighbors.resize(num_nodes_initialize);
+    out_neighbors.resize(num_nodes_max);    
+    in_neighbors.resize(num_nodes_max);
     
     // Malloc for mutex.
-    out_mutex.resize(num_nodes_initialize);
-    in_mutex.resize(num_nodes_initialize);
-    for  (unsigned int k = 0; k< num_nodes_initialize; k++){
+    out_mutex.resize(num_nodes_max);
+    in_mutex.resize(num_nodes_max);
+    for  (unsigned int k = 0; k< num_nodes_max; k++){
         out_mutex[k].reset(new std::mutex());
         in_mutex[k].reset(new std::mutex());
     }
@@ -243,7 +241,7 @@ void adListShared<T>::print()
 // class adList: public dataStruc {
 // //      friend class adListPart<T>;
 //     private:
-//       int64_t num_nodes_initialize; // The max amount of nodes we would initialize.
+//       int64_t num_nodes_max; // The max amount of nodes we would initialize.
       
 //       void processMetaData(const Edge& e, bool source);
 //       void updateForVertex(const Edge& e, bool source);    
@@ -274,23 +272,23 @@ void adListShared<T>::print()
 // template <typename T>
 // adList<T>::adList(bool w, bool d, int64_t _num_nodes)
 // : dataStruc(w, d){
-//     num_nodes_initialize = _num_nodes;
+//     num_nodes_max = _num_nodes;
 
 //     // initialize 1) property 2) affected 3) vertices vectors 4) markers
-//     property.resize(num_nodes_initialize, -1);
-//     affected.resize(num_nodes_initialize); affected.fill(false);
+//     property.resize(num_nodes_max, -1);
+//     affected.resize(num_nodes_max); affected.fill(false);
 
-//     out_neighbors.resize(num_nodes_initialize);
-//     in_neighbors.resize(num_nodes_initialize);
+//     out_neighbors.resize(num_nodes_max);
+//     in_neighbors.resize(num_nodes_max);
 
-//     // out_neighbors = new vector<T>[num_nodes_initialize];
-//     // in_neighbors = new vector<T>[num_nodes_initialize];
+//     // out_neighbors = new vector<T>[num_nodes_max];
+//     // in_neighbors = new vector<T>[num_nodes_max];
 
-//     in_markers = new bool[num_nodes_initialize];
-//     out_markers = new bool[num_nodes_initialize];
-//     //in_markers.resize(num_nodes_initialize);
-//     //out_markers.resize(num_nodes_initialize);
-//     for (unsigned int k = 0; k < num_nodes_initialize; k++){
+//     in_markers = new bool[num_nodes_max];
+//     out_markers = new bool[num_nodes_max];
+//     //in_markers.resize(num_nodes_max);
+//     //out_markers.resize(num_nodes_max);
+//     for (unsigned int k = 0; k < num_nodes_max; k++){
 //         in_markers[k] = 1;
 //         out_markers[k] = 1;
 //     }
@@ -363,7 +361,7 @@ void adListShared<T>::print()
 
 //     // 1. search whether the edge exists
 //     bool* markerPtr; // pointer to the marker
-//     if (selfID >= num_nodes_initialize) cout << "wrong ID" <<endl;
+//     if (selfID >= num_nodes_max) cout << "wrong ID" <<endl;
 //     if (in_neighbor){
 //         markerPtr = in_markers + selfID;
 //     }

@@ -16,9 +16,10 @@ public:
     bool directed;
     std::vector<float> property;
     pvector<bool> affected;
-    dataStruc(bool _weighted, bool _directed):
+    dataStruc(bool _weighted, bool _directed, int64_t _num_nodes_max):
         weighted(_weighted),
-        directed(_directed) {}
+        directed(_directed),
+        num_nodes_max(_num_nodes_max) {}
 
     virtual void update(const EdgeList& el) = 0;
     virtual void print() = 0;

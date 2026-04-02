@@ -42,7 +42,6 @@ class adListChunked: public dataStruc {
 	        ~partition();
 	        inline void enqueue(Edge const &e);
         };
-      int64_t num_nodes_initialize; // The max amount of nodes we would initialize.
       // static const int64_t num_partitions = 8;      
       int64_t num_partitions;
       vector<unique_ptr<partition>> in, out;
@@ -88,16 +87,15 @@ void adListChunked<T>::partition::enqueue(Edge const &e) {
 // // ---------------------------------adListChunked--------------------------------------
 template <typename T>
 adListChunked<T>::adListChunked(bool w, bool d, int64_t _num_nodes, int64_t _num_parts)
-: dataStruc(w, d){
-    num_nodes_initialize = _num_nodes;
+: dataStruc(w, d, _num_nodes){
     if (_num_parts % 2)
         num_partitions = _num_parts - 1;
     else
         num_partitions = _num_parts;
     cout << "Num parts: " << _num_parts << endl;
     // initialize 1) property 2) affected 3) vertices vectors 4) markers
-    property.resize(num_nodes_initialize, -1);
-    affected.resize(num_nodes_initialize); affected.fill(false);
+    property.resize(num_nodes_max, -1);
+    affected.resize(num_nodes_max); affected.fill(false);
 
     for (int i = 0; i < num_partitions / 2; i++) {
         if (directed) {
@@ -123,13 +121,12 @@ adListChunked<T>::adListChunked(bool w, bool d, int64_t _num_nodes, int64_t _num
 
 template <typename T>
 adListChunked<T>::adListChunked(bool w, bool d, int64_t _num_nodes)
-: dataStruc(w, d){
-    num_nodes_initialize = _num_nodes;
+: dataStruc(w, d, _num_nodes){
     num_partitions = 16;
 
     // initialize 1) property 2) affected 3) vertices vectors 4) markers
-    property.resize(num_nodes_initialize, -1);
-    affected.resize(num_nodes_initialize); affected.fill(false);
+    property.resize(num_nodes_max, -1);
+    affected.resize(num_nodes_max); affected.fill(false);
 
     for (int i = 0; i < num_partitions / 2; i++) {
         if (directed) {

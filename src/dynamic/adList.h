@@ -17,7 +17,7 @@ class adList: public dataStruc {
     public:  
       std::vector<std::vector<T>> out_neighbors;
       std::vector<std::vector<T>> in_neighbors;  
-      adList(bool w, bool d);    
+      adList(bool w, bool d, int64_t _num_nodes);    
       void update(const EdgeList& el) override;
       void print() override;
       int64_t in_degree(NodeID n) override;
@@ -25,26 +25,31 @@ class adList: public dataStruc {
 };
 
 template <typename T>
-adList<T>::adList(bool w, bool d)
-    : dataStruc(w, d){ /*std::cout << "Creating AdList" << std::endl;*/ }    
+adList<T>::adList(bool w, bool d ,int64_t _num_nodes): 
+dataStruc(w, d, _num_nodes){ 
+    std::cout << "Creating AdList" << std::endl;
+    // initialize 1) property 2) affected 3) vertices vectors
+    property.resize(num_nodes_max, -1);
+    affected.resize(num_nodes_max); 
+    affected.fill(false);   
+    out_neighbors.resize(num_nodes_max);
+    in_neighbors.resize(num_nodes_max);
+} 
 
 template <typename T>
 bool adList<T>::vertexExists(const Edge& e, bool source)
 {
-    bool exists;
-    if (source)
-	exists = e.sourceExists;
-    else
-	exists = e.destExists;
+    bool exists = source ? e.sourceExists : e.destExists;
+    NodeID index = source ? e.source : e.destination;
+    
     if (exists) {        
         num_edges++;        
-        if(source) affected[e.source] = 1;
-        else affected[e.destination] = 1;
+        affected[index] = 1;  // Use index directly
         return true;
     } else {
         num_nodes++;        
         num_edges++;
-        affected.push_back(1);
+        affected[index] = 1;  // Use index directly, NOT push_back
         return false;
     }  
 }
@@ -52,32 +57,26 @@ bool adList<T>::vertexExists(const Edge& e, bool source)
 template <typename T>
 void adList<T>::updateForNewVertex(const Edge& e, bool source)
 {
-    property.push_back(-1);      
+    NodeID index = source ? e.source : e.destination;
+    //property.push_back(-1);     //already pre allocated 
     if (source || (!source && !directed)) {
         // update out_neighbors with meaningful data
-        std::vector<T> edge_data;
+        //std::vector<T> edge_data;
         T neighbor;
         if (source)
-	    neighbor.setInfo(e.destination, e.weight);
+	        neighbor.setInfo(e.destination, e.weight);
         else
-	    neighbor.setInfo(e.source, e.weight);   
-        edge_data.push_back(neighbor);
-        out_neighbors.push_back(edge_data);
-        // push some junk in in_neighbors
-        if (directed) {
-            std::vector<T> fake_edge_data;
-            in_neighbors.push_back(fake_edge_data);
-        }              
+	        neighbor.setInfo(e.source, e.weight);   
+
+        // Use index instead of push_back
+        out_neighbors[index].push_back(neighbor);             
     } else if (!source && directed) {
         // update in_neighbors with meaningful data
-        std::vector<T> edge_data;
         T neighbor; 
-        neighbor.setInfo(e.source, e.weight);        
-        edge_data.push_back(neighbor);
-        in_neighbors.push_back(edge_data);
-        // push some junk out_neighbors
-        std::vector<T> fake_edge_data;            
-        out_neighbors.push_back(fake_edge_data);        
+        neighbor.setInfo(e.source, e.weight);    
+        
+        //Use index instead of push_back
+        in_neighbors[index].push_back(neighbor);    
     }
 }
 

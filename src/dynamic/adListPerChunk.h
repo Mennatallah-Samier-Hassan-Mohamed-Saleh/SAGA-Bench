@@ -30,8 +30,8 @@ class adListPerChunk: public dataStruc {
 
 template <typename T>
 adListPerChunk<T>::adListPerChunk(bool w, bool d, int64_t _num_nodes)
-    : dataStruc(w, d), num_nodes_initialize(_num_nodes){ 
-        neighbors.resize(num_nodes_initialize);
+    : dataStruc(w, d, _num_nodes){ 
+        neighbors.resize(_num_nodes);
     }    
 
 template <typename T>
