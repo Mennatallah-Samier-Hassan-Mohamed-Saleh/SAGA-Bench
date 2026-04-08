@@ -88,11 +88,15 @@ void adListChunked<T>::partition::enqueue(Edge const &e) {
 template <typename T>
 adListChunked<T>::adListChunked(bool w, bool d, int64_t _num_nodes, int64_t _num_parts)
 : dataStruc(w, d, _num_nodes){
-    if (_num_parts % 2)
+    if (_num_parts < 2) {
+        cout << "Number of partitions must be at least 2. Setting to 2." << endl;
+        num_partitions = 2;
+    }
+    else if (_num_parts % 2)
         num_partitions = _num_parts - 1;
     else
         num_partitions = _num_parts;
-    cout << "Num parts: " << _num_parts << endl;
+    cout << "Num parts: " << num_partitions << endl;
     // initialize 1) property 2) affected 3) vertices vectors 4) markers
     property.resize(num_nodes_max, -1);
     affected.resize(num_nodes_max); affected.fill(false);
