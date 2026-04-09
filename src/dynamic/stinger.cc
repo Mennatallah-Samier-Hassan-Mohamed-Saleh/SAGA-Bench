@@ -5,16 +5,14 @@ bool compare_and_swap(bool &x, const bool &old_val, const bool &new_val){
 }
 
 stinger::stinger(bool w, bool d, int64_t _num_nodes):
-dataStruc(w,d){        
-    //cout << "Created Stinger" << endl;
-    num_nodes_initialize = _num_nodes;
+dataStruc(w,d,_num_nodes){        
 
     // initialize 1) property 2) affected 3) vertices vectors 
-    property.resize(num_nodes_initialize, -1);
-    affected.resize(num_nodes_initialize); affected.fill(false);
+    property.resize(_num_nodes, -1);
+    affected.resize(_num_nodes); affected.fill(false);
     
     // we also create the first edgeblock for in-neighbor and out-neighbor 
-    for(NodeID i=0; i<num_nodes_initialize; i++){
+    for(NodeID i=0; i<_num_nodes; i++){
         stinger_vertex v(i);                
         v.out_neighbors = new stinger_eb(i);
         if(directed) v.in_neighbors = new stinger_eb(i);
@@ -239,7 +237,7 @@ void stinger::print_eb(stinger_eb* eb)
 void stinger::print()
 {
     cout << " Actual numNodes: " << num_nodes << 
-            " numNodes initialized with: " << num_nodes_initialize << 
+            " numNodes initialized with: " << num_nodes_max << 
             " numEdges: " << num_edges << 
             " weighted: " << weighted << 
             " directed: " << directed << 

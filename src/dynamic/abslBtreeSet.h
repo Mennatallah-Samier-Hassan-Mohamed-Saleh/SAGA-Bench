@@ -19,7 +19,7 @@ public:
     std::vector<absl::btree_set<T>> out_neighbors;
     std::vector<absl::btree_set<T>> in_neighbors;
 
-    abslBtreeSet(bool w, bool d);
+    abslBtreeSet(bool w, bool d, int64_t _num_nodes_max);
     void update(const EdgeList& el) override;
     void print() override;
     int64_t in_degree(NodeID n) override;
@@ -27,8 +27,17 @@ public:
 };
 
 template <typename T>
-abslBtreeSet<T>::abslBtreeSet(bool w, bool d)
-    : dataStruc(w, d) { std::cout << "Creating abslBtreeSet" << std::endl;  }
+abslBtreeSet<T>::abslBtreeSet(bool w, bool d, int64_t _num_nodes_max)
+    : dataStruc(w, d, _num_nodes_max) 
+{ 
+    std::cout << "Creating abslBtreeSet" << std::endl;
+    property.resize(num_nodes_max, -1);    
+    affected.resize(num_nodes_max); 
+    affected.fill(false);
+
+    out_neighbors.resize(num_nodes_max);    
+    in_neighbors.resize(num_nodes_max);
+}
 
 
 /**
@@ -41,15 +50,16 @@ template <typename T>
 bool abslBtreeSet<T>::vertexExists(const Edge& e, bool source)
 {
     bool exists = source ? e.sourceExists : e.destExists;
+    NodeID index = source ? e.source : e.destination;
+    
     if (exists) {
         num_edges++;
-        if (source) affected[e.source] = 1;
-        else affected[e.destination] = 1;
+        affected[index] = 1;  // CHANGED: Use index directly instead of push_back
         return true;
     } else {
         num_nodes++;
         num_edges++;
-        affected.push_back(1);
+        affected[index] = 1;  // CHANGED: Use index directly instead of push_back
         return false;
     }
 }
@@ -65,31 +75,30 @@ bool abslBtreeSet<T>::vertexExists(const Edge& e, bool source)
 template <typename T>
 void abslBtreeSet<T>::updateForNewVertex(const Edge& e, bool source)
 {
-    property.push_back(-1);
-
+    NodeID index = source ? e.source : e.destination;  // ADDED: Calculate index
+    
+    // REMOVED: property.push_back(-1) - already pre-allocated with -1
+    
     if (source || (!source && !directed)) {
         T neighbor;
         if (source) neighbor.setInfo(e.destination, e.weight);
         else neighbor.setInfo(e.source, e.weight);
 
-        absl::btree_set<T> neighbor_set;
-        neighbor_set.insert(neighbor);
-        out_neighbors.push_back(neighbor_set);
-
-        if (directed) {
-            // Add empty in_neighbors for this new vertex
-            in_neighbors.emplace_back();
-        }
+        // CHANGED: Use index instead of push_back
+        // out_neighbors[index] is already an empty btree_set from resize
+        out_neighbors[index].insert(neighbor);
+        
+        // REMOVED: No need to push empty in_neighbors - already pre-allocated
     }
     else if (!source && directed) {
         T neighbor;
         neighbor.setInfo(e.source, e.weight);
 
-        absl::btree_set<T> neighbor_set;
-        neighbor_set.insert(neighbor);
-        in_neighbors.push_back(neighbor_set);
-        // Add empty out_neighbors for this new vertex
-        out_neighbors.emplace_back();
+        // CHANGED: Use index instead of push_back
+        // in_neighbors[index] is already an empty btree_set from resize
+        in_neighbors[index].insert(neighbor);
+        
+        // REMOVED: No need to push empty out_neighbors - already pre-allocated
     }
 }
 
@@ -102,8 +111,6 @@ void abslBtreeSet<T>::updateForNewVertex(const Edge& e, bool source)
   * and setInfo for updating neighbor information
   * this approach is efficient for moderate number of neighbors
   * **/
-
-
 template <typename T>
 void abslBtreeSet<T>::updateForExistingVertex(const Edge& e, bool source)
 {
@@ -111,7 +118,8 @@ void abslBtreeSet<T>::updateForExistingVertex(const Edge& e, bool source)
 
     if (source || (!source && !directed)) {
         NodeID dest = source ? e.destination : e.source;
-        T neighbor; neighbor.setInfo(dest, e.weight);
+        T neighbor; 
+        neighbor.setInfo(dest, e.weight);
         auto& neighbors = out_neighbors[index];
 
         auto it = neighbors.find(neighbor);
@@ -125,7 +133,8 @@ void abslBtreeSet<T>::updateForExistingVertex(const Edge& e, bool source)
         }
     }
     else if (!source && directed) {
-        T neighbor; neighbor.setInfo(e.source, e.weight);
+        T neighbor; 
+        neighbor.setInfo(e.source, e.weight);
         auto& neighbors = in_neighbors[index];
 
         auto it = neighbors.find(neighbor);
@@ -152,13 +161,17 @@ void abslBtreeSet<T>::update(const EdgeList& el)
     for (auto it = el.begin(); it != el.end(); ++it) {
         //Process source vertex
         bool exists = vertexExists(*it, true);
-        if (!exists) updateForNewVertex(*it, true);
-        else updateForExistingVertex(*it, true);
+        if (!exists) 
+            updateForNewVertex(*it, true);
+        else 
+            updateForExistingVertex(*it, true);
         
         //Process destination vertex
         bool exists1 = vertexExists(*it, false);
-        if (!exists1) updateForNewVertex(*it, false);
-        else updateForExistingVertex(*it, false);
+        if (!exists1) 
+            updateForNewVertex(*it, false);
+        else 
+            updateForExistingVertex(*it, false);
     }
 }
 

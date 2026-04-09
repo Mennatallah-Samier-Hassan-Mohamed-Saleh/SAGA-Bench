@@ -58,7 +58,7 @@ struct stinger_vertex
 
 class stinger: public dataStruc{
     private:                     
-      int64_t num_nodes_initialize;    /**< # of nodes we initialize with, not actual # of nodes */
+
       //bool vertexExists(const Edge& e, bool source);
       //void updateForNewVertex(const Edge& e, bool source);
       //void updateForExistingVertex(const Edge& e, bool source); 
