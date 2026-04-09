@@ -46,7 +46,6 @@ private:
     static void dequeue_loop(partition *pt, volatile bool& done);
     inline int32_t pt_hash(NodeID const &n) const;
     static const int8_t ld_threshold = 2;
-    const int64_t init_num_nodes;
     const int64_t num_out_partitions;
     const int64_t num_in_partitions;
     std::vector<std::unique_ptr<partition>> in, out;
@@ -119,13 +118,12 @@ void darhh<T>::partition::enqueue(Edge const &e)
 
 template <typename T>
 darhh<T>::darhh(bool w, bool d, int64_t init_nn, int64_t nt):
-    super(w, d),
-    init_num_nodes(init_nn),
+    super(w, d, init_nn),
     num_out_partitions(d ? nt / 2 : nt),
     num_in_partitions(d ? nt / 2 : 0)
 {
-    super::property.resize(init_num_nodes, -1);
-    super::affected.resize(init_num_nodes);
+    super::property.resize(init_nn, -1);
+    super::affected.resize(init_nn);
     super::affected.fill(false);
     for (int i = 0; i < num_out_partitions; ++i) {
 	out.push_back(std::unique_ptr<partition>(new partition(this)));
