@@ -26,7 +26,6 @@ private:
     
 
     std::vector<std::unique_ptr<std::mutex>> in_mutex, out_mutex;
-    int64_t num_nodes_initialize;
 
 public:
     std::vector<absl::btree_set<T>> out_neighbors;
@@ -40,18 +39,18 @@ public:
 };
 
 template <typename T>
-abslBtreeSetShared<T>::abslBtreeSetShared(bool w, bool d,int64_t _num_nodes): dataStruc(w, d), num_nodes_initialize(_num_nodes) { 
+abslBtreeSetShared<T>::abslBtreeSetShared(bool w, bool d,int64_t _num_nodes): dataStruc(w, d, _num_nodes){ 
     std::cout << "Creating abslBtreeSetShared" << std::endl;
-    property.resize(num_nodes_initialize, -1);    
-    affected.resize(num_nodes_initialize); affected.fill(false);
+    property.resize(num_nodes_max, -1);    
+    affected.resize(num_nodes_max); affected.fill(false);
 
-    out_neighbors.resize(num_nodes_initialize);    
-    in_neighbors.resize(num_nodes_initialize);
+    out_neighbors.resize(num_nodes_max);    
+    in_neighbors.resize(num_nodes_max);
     
     // Malloc for mutex.
-    out_mutex.resize(num_nodes_initialize);
-    in_mutex.resize(num_nodes_initialize);
-    for  (unsigned int k = 0; k< num_nodes_initialize; k++){
+    out_mutex.resize(num_nodes_max);
+    in_mutex.resize(num_nodes_max);
+    for  (unsigned int k = 0; k< num_nodes_max; k++){
         out_mutex[k].reset(new std::mutex());
         in_mutex[k].reset(new std::mutex());
     }
