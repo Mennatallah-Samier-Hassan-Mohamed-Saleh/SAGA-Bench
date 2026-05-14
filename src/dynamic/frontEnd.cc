@@ -39,7 +39,7 @@ int main(int argc, char* argv[])
             Edge e;
             e.source      = u;
             e.destination = v;
-            e.weight      = weighted ? 1.0 : 0.0;  
+            e.weight      = weighted ? 2.0 : 1.0;  
            // e.sourceExists = true;   
             //e.destExists   = true;
             allEdges.push_back(e);

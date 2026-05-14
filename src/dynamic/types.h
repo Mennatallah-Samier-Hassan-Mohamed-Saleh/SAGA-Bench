@@ -52,7 +52,7 @@ public:
         node = n;
     }
     NodeID getNodeID() const { return node; }
-    Weight getWeight() const { return -1; }
+    Weight getWeight() const { return 1; }
     void printNode() const
     {
         std::cout << node << "  ";
@@ -71,8 +71,8 @@ class NodeWeight : public BaseNode
     Weight weight;
 
 public:
-    NodeWeight() : node(-1), weight(-1) {}
-    NodeWeight(NodeID n) : node(n), weight(-1) {}
+    NodeWeight() : node(1), weight(1) {}
+    NodeWeight(NodeID n) : node(n), weight(1) {}
     NodeWeight(NodeID n, Weight w) : node(n), weight(w) {}
     void setInfo(NodeID n, Weight w)
     {
@@ -109,9 +109,9 @@ struct Edge
                                                            batch_id(-1),
                                                            sourceExists(se),
                                                            destExists(de) {}
-    Edge(NodeID s, NodeID d, bool se, bool de) : Edge(s, d, -1, se, de) {}
+    Edge(NodeID s, NodeID d, bool se, bool de) : Edge(s, d, 1, se, de) {}
     Edge(NodeID s, NodeID d, Weight w) : Edge(s, d, w, false, false) {}
-    Edge(NodeID s, NodeID d) : Edge(s, d, -1) {}
+    Edge(NodeID s, NodeID d) : Edge(s, d, 1) {}
     Edge() {}
     Edge reverse() const
     {
