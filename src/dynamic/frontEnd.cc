@@ -33,15 +33,18 @@ int main(int argc, char* argv[])
     allEdges.reserve(g.m());
 
     bool weighted = opts.weighted;
+    // Using a fixed seed for reproducibility of random weights and shuffling
+    mt19937 rng(kRandSeed);
+    // If weighted, set up a uniform distribution for weights in the specified range
+    std::uniform_int_distribution<Weight> uweight(opts.min_weight, opts.max_weight);  
     t.Start();
     for (uint32_t u = 0; u < g.n(); u++) {
         for (auto v : g.neighbors(u)) {
             Edge e;
             e.source      = u;
             e.destination = v;
-            e.weight      = weighted ? 2.0 : 1.0;  
-           // e.sourceExists = true;   
-            //e.destExists   = true;
+            // If the graph is weighted, assign a random integer weight; otherwise, use 1
+            e.weight      = weighted ? uweight(rng) : 1;  
             allEdges.push_back(e);
         }
     }
@@ -53,7 +56,7 @@ int main(int argc, char* argv[])
     /*Step 3: Shuffle the edge list in memory. */
     cout << "Shuffling edges..." << endl;
     t.Start();
-    mt19937 rng(kRandSeed);
+    //mt19937 rng(kRandSeed);
     shuffle(allEdges.begin(), allEdges.end(), rng);
     t.Stop();
     cout << "Time to shuffle edges: " << t.Seconds() << " seconds" << endl;

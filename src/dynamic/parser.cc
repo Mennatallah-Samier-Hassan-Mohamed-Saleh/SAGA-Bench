@@ -40,7 +40,7 @@ bool supportedDataStruc(const std::string &type)
 void printUsage()
 {
     std::cout << "Arguments:  -f filename -b batchSize -w weighted"
-	" -d directed -s dataStructure -n numNodes -a algorithm -t number of threads -i initial batchSize\n"
+	" -d directed -s dataStructure -n numNodes -a algorithm -t number of threads -i initial batchSize -l weight_min -u weight_max\n"
 	      << "First four arguments are required\n"
 	      << "-f filename       	should end in .csv\n"
 	      << "-b batchSize      	suggestion = 100K\n"
@@ -51,6 +51,8 @@ void printUsage()
 	      << "-a algorithm       	algorithm to run (default: traverse)\n"
 	      << "-t number of threads    (default: 16)\n"
 		  << "-i initial batchSize    initial batch size (optional for scalability tests)\n"
+		  << "-l weight_min       	min weight for random weight generation (default: 2)\n"
+	      << "-u weight_max       	max weight for random weight generation (default: 2)\n"
 	      << "  DATA STRUCTURE OPTIONS:\n"
 		  << "               	1) adList (single-threaded) \n"		  
 	      << "               	2) adListShared (multihtreaded shared style) \n"
@@ -80,7 +82,7 @@ cmd_args parse(int argc, char *argv[])
 {
     cmd_args args;
     int opt = 0;
-    while(-1 != (opt = getopt(argc, argv, "f:b:w:d:s:n:a:t:i:h"))) {
+    while(-1 != (opt = getopt(argc, argv, "f:b:w:d:s:n:a:t:i:l:u:h"))) {
         switch(opt) {
 	case 'f':               
 	    if (getSuffix(optarg) != ".csv") {
@@ -142,6 +144,12 @@ cmd_args parse(int argc, char *argv[])
 	    break;
 	case 'i':
 	    args.initial_batch_size = atoi(optarg);	    
+	    break;
+	case 'l':
+	    args.min_weight = atol(optarg);
+	    break;
+	case 'u':
+	    args.max_weight = atol(optarg);
 	    break;
 	case 'h':
 	    std::cout << "Printing help" << std::endl;
