@@ -53,7 +53,7 @@ int main(int argc, char* argv[])
     /*Step 3: Shuffle the edge list in memory. */
     cout << "Shuffling edges..." << endl;
     t.Start();
-    mt19937 rng(42);
+    mt19937 rng(kRandSeed);
     shuffle(allEdges.begin(), allEdges.end(), rng);
     t.Stop();
     cout << "Time to shuffle edges: " << t.Seconds() << " seconds" << endl;
