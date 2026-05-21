@@ -147,12 +147,12 @@ void dynCCAlg(T* ds){
     }        
 
     t.Stop();
-    /*
+    
     // Print CC after CC completes
     for (NodeID n = 0; n < ds->num_nodes; n++) {
         std::cout << "Connected component to " << n << ": " << ds->property[n] << std::endl;
     } 
-    */
+    
     ofstream out("Alg.csv", std::ios_base::app);   
     out << t.Seconds() << std::endl;    
     out.close();
@@ -230,12 +230,12 @@ void CCStartFromScratch(T* ds){
     }   
 
     t.Stop();
-    /*   
+    
     // Print CC after CC completes
     for (NodeID n = 0; n < ds->num_nodes; n++) {
         std::cout << "Connected component to " << n << ": " << ds->property[n] << std::endl;
     }  
-    */
+
     ofstream out("Alg.csv", std::ios_base::app);   
     out << t.Seconds() << std::endl;    
     out.close();
