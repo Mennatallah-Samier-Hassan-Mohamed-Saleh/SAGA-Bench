@@ -42,7 +42,7 @@ void printUsage()
     std::cout << "Arguments:  -f filename -b batchSize -w weighted"
 	" -d directed -s dataStructure -n numNodes -a algorithm -t number of threads -i initial batchSize -l weight_min -u weight_max\n"
 	      << "First four arguments are required\n"
-	      << "-f filename       	should end in .csv\n"
+	      << "-f filename       	\n"
 	      << "-b batchSize      	suggestion = 100K\n"
 	      << "-w weighted       	0=unweighted   1=weighted\n"
 	      << "-d directed       	0=undirected   1=directed\n"
@@ -85,10 +85,6 @@ cmd_args parse(int argc, char *argv[])
     while(-1 != (opt = getopt(argc, argv, "f:b:w:d:s:n:a:t:i:l:u:h"))) {
         switch(opt) {
 	case 'f':               
-	    if (getSuffix(optarg) != ".csv") {
-		std::cout << "Can't support non-CSV yet" << std::endl;
-		exit(-1);
-	    }
 	    args.flags |= 8;
 	    args.filename = optarg;
 	    break;
