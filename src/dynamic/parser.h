@@ -18,6 +18,8 @@ struct cmd_args {
     //Assign start and end weights for random weight generation in case of weighted graph. Default is 2, which means all weights will be 2.
     int64_t min_weight = 2;
     int64_t max_weight = 2;
+
+    bool verbose = false; // Optional field to print algorithms output, default is false.
 };
 
 std::string getSuffix(std::string filename);

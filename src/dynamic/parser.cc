@@ -53,6 +53,7 @@ void printUsage()
 		  << "-i initial batchSize    initial batch size (optional for scalability tests)\n"
 		  << "-l weight_min       	min weight for random weight generation (default: 2)\n"
 	      << "-u weight_max       	max weight for random weight generation (default: 2)\n"
+		  << "-v verbose             print algorithms output (default: false)\n"
 	      << "  DATA STRUCTURE OPTIONS:\n"
 		  << "               	1) adList (single-threaded) \n"		  
 	      << "               	2) adListShared (multihtreaded shared style) \n"
@@ -82,7 +83,7 @@ cmd_args parse(int argc, char *argv[])
 {
     cmd_args args;
     int opt = 0;
-    while(-1 != (opt = getopt(argc, argv, "f:b:w:d:s:n:a:t:i:l:u:h"))) {
+    while(-1 != (opt = getopt(argc, argv, "f:b:w:d:s:n:a:t:i:l:u:h:v"))) {
         switch(opt) {
 	case 'f':               
 	    args.flags |= 8;
@@ -151,6 +152,9 @@ cmd_args parse(int argc, char *argv[])
 	    std::cout << "Printing help" << std::endl;
 	    printUsage();
 	    exit(0);
+	    break;
+	case 'v':
+	    args.verbose = true;
 	    break;
         }
     }
