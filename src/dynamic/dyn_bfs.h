@@ -87,7 +87,7 @@ void BFSIter0(T* ds, SlidingQueue<NodeID>& queue){
 }
 
 template<typename T>
-void dynBFSAlg(T* ds, NodeID source){
+void dynBFSAlg(T* ds, NodeID source,bool verbose){
     std::cout <<"Running dynamic BFS " << std::endl;
     
     Timer t;
@@ -145,13 +145,15 @@ void dynBFSAlg(T* ds, NodeID source){
         ds->affected[i] = false;
     }
     t.Stop();   
-    // Print distances after BFS completes
-    for (NodeID n = 0; n < ds->num_nodes; n++) {
-        std::cout << "Distance to " << n << ": " << ds->property[n] << std::endl;
-    } 
     ofstream out("Alg.csv", std::ios_base::app);   
     out << t.Seconds() << std::endl;    
     out.close();
+    if (verbose){
+        for (NodeID n = 0; n < ds->num_nodes; n++) 
+        {
+            std::cout << "Distance to " << n << ": " << ds->property[n] << std::endl;
+        }
+    }
 }  
 
 template<typename T> 

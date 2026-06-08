@@ -26,6 +26,7 @@ private:
     dataStruc* ds;    
     NodeID source;
     int batch;
+	bool verbose; // whether to print algorithm output, default is false.
 	bool is_adListST; // single thread adList
     bool is_adList;   // shared style multithreading
     bool is_stinger;  
@@ -35,12 +36,13 @@ private:
 	bool is_abslBtreeSetShared; // absl btree set style (shared multithreading)
 
 public:    
-    Algorithm(const std::string& alg_, dataStruc* ds_, const std::string& dtype_):
+    Algorithm(const std::string& alg_, dataStruc* ds_, const std::string& dtype_, bool verbose_) :
 	alg(alg_),    
 	dtype(dtype_),
 	ds(ds_),     
 	source(-1),
-	batch(-1) { 
+	batch(-1),
+	verbose(verbose_) { 
 		is_adListST = (dtype.compare("adList") == 0);           
 		is_adList = (dtype.compare("adListShared") == 0);
 		is_stinger = (dtype.compare("stinger") == 0);
@@ -300,31 +302,31 @@ public:
 		    		return;
 	   		}
 	    	if (is_adList && ds->weighted)
-				return dynBFSAlg(ds0, source);
+				return dynBFSAlg(ds0, source,verbose);
 	    	else if (is_adList && !ds->weighted)
-				return dynBFSAlg(ds1, source);
+				return dynBFSAlg(ds1, source,verbose);
 	    	else if (is_rhh && ds->weighted)
-				return dynBFSAlg(ds2, source);
+				return dynBFSAlg(ds2, source,verbose);
 	    	else if (is_rhh && !ds->weighted)
-				return dynBFSAlg(ds3, source);
+				return dynBFSAlg(ds3, source,verbose);
 	    	else if (is_stinger)
-				return dynBFSAlg(ds4, source);	 
+				return dynBFSAlg(ds4, source,verbose);	 
 	    	else if (is_adList2 && ds->weighted)
-				return dynBFSAlg(ds5, source);
+				return dynBFSAlg(ds5, source,verbose);
 	    	else if (is_adList2 && !ds->weighted)
-				return dynBFSAlg(ds6, source);  
+				return dynBFSAlg(ds6, source,verbose);  
 			else if (is_adListST && ds->weighted)
-                return dynBFSAlg(ds7, source);
+                return dynBFSAlg(ds7, source,verbose);
 			else if (is_adListST && !ds->weighted) 
-			    return dynBFSAlg(ds8, source);
+			    return dynBFSAlg(ds8, source,verbose);
 			else if (is_abslBtreeSet && ds->weighted)
-				return dynBFSAlg(ds9, source);		
+				return dynBFSAlg(ds9, source,verbose);		
 			else if (is_abslBtreeSet && !ds->weighted) 
-			    return dynBFSAlg(ds10, source);
+			    return dynBFSAlg(ds10, source,verbose);
 			else if (is_abslBtreeSetShared && ds->weighted)	
-				return dynBFSAlg(ds11, source);
+				return dynBFSAlg(ds11, source,verbose);
 			else if (is_abslBtreeSetShared && !ds->weighted) 
-			    return dynBFSAlg(ds12, source);
+			    return dynBFSAlg(ds12, source,verbose);
 		} else if (alg == "ssspfromscratch") {
 	    	if (source == -1) {
 				DynamicSourcePicker sp(ds);

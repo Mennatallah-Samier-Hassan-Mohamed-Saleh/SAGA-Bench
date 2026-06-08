@@ -73,7 +73,7 @@ int main(int argc, char* argv[])
 
     /*Step 4: Create data structure and algorithm */
     dataStruc* struc = createDataStruc(opts.type, opts.weighted, opts.directed, g.n(), opts.num_threads);   
-    Algorithm alg(opts.algorithm, struc, opts.type);
+    Algorithm alg(opts.algorithm, struc, opts.type, opts.verbose);
 
     /*Step 5: Slice into batches, update, and run algorithm inline */
     int64_t start_batch_size = (opts.initial_batch_size != 0) ? opts.initial_batch_size : opts.batch_size;
