@@ -99,166 +99,166 @@ public:
 			    return traverseAlg(ds12);
 		} else if (alg == "prfromscratch") {
 	    	if (is_adList && ds->weighted)
-				return PRStartFromScratch(ds0);
+				return PRStartFromScratch(ds0, verbose);
 	    	else if (is_adList && !ds->weighted)
-				return PRStartFromScratch(ds1);
+				return PRStartFromScratch(ds1, verbose);
 	    	else if (is_rhh && ds->weighted)
-				return PRStartFromScratch(ds2);
+				return PRStartFromScratch(ds2, verbose);
 	   		else if (is_rhh && !ds->weighted)
-				return PRStartFromScratch(ds3);
+				return PRStartFromScratch(ds3, verbose);
 	    	else if (is_stinger)
-				return PRStartFromScratch(ds4);
+				return PRStartFromScratch(ds4, verbose);
 	    	else if (is_adList2 && ds->weighted)
-				return PRStartFromScratch(ds5);
+				return PRStartFromScratch(ds5, verbose);
 	    	else if (is_adList2 && !ds->weighted)
-				return PRStartFromScratch(ds6);	
+				return PRStartFromScratch(ds6, verbose);	
 			else if (is_adListST && ds->weighted)
-                return PRStartFromScratch(ds7);
+                return PRStartFromScratch(ds7, verbose);
 			else if (is_adListST && !ds->weighted) 
-			    return PRStartFromScratch(ds8);
+			    return PRStartFromScratch(ds8, verbose);
 			else if (is_abslBtreeSet && ds->weighted)
-				return PRStartFromScratch(ds9);
+				return PRStartFromScratch(ds9, verbose);
 			else if (is_abslBtreeSet && !ds->weighted) 
-			    return PRStartFromScratch(ds10);
+			    return PRStartFromScratch(ds10, verbose);
 			else if (is_abslBtreeSetShared && ds->weighted)
-				return PRStartFromScratch(ds11);
+				return PRStartFromScratch(ds11, verbose);
 			else if (is_abslBtreeSetShared && !ds->weighted) 
-			    return PRStartFromScratch(ds12);    
+			    return PRStartFromScratch(ds12, verbose);    
 		} else if (alg == "prdyn") {
 	    	if (is_adList && ds->weighted)
-				return dynPRAlg(ds0);
+				return dynPRAlg(ds0, verbose);
 	    	else if (is_adList && !ds->weighted)
-				return dynPRAlg(ds1);
+				return dynPRAlg(ds1, verbose);
 	    	else if (is_rhh && ds->weighted)
-				return dynPRAlg(ds2);
+				return dynPRAlg(ds2, verbose);
 	    	else if (is_rhh && !ds->weighted)
-				return dynPRAlg(ds3);
+				return dynPRAlg(ds3, verbose);
 	    	else if (is_stinger)
-				return dynPRAlg(ds4);		
+				return dynPRAlg(ds4, verbose);		
 	    	else if (is_adList2 && ds->weighted)
-				return dynPRAlg(ds5);
+				return dynPRAlg(ds5, verbose);
 	    	else if (is_adList2 && !ds->weighted)
-				return dynPRAlg(ds6);	    
+				return dynPRAlg(ds6, verbose);	    
 			else if (is_adListST && ds->weighted)
-                return dynPRAlg(ds7);
+                return dynPRAlg(ds7, verbose);
 			else if (is_adListST && !ds->weighted) 
-			    return dynPRAlg(ds8);
+			    return dynPRAlg(ds8, verbose);
 			else if (is_abslBtreeSet && ds->weighted)
-				return dynPRAlg(ds9);
+				return dynPRAlg(ds9, verbose);
 			else if (is_abslBtreeSet && !ds->weighted) 
-			    return dynPRAlg(ds10);
+			    return dynPRAlg(ds10, verbose);
 			else if (is_abslBtreeSetShared && ds->weighted)
-				return dynPRAlg(ds11);
+				return dynPRAlg(ds11, verbose);
 			else if (is_abslBtreeSetShared && !ds->weighted) 
-			    return dynPRAlg(ds12);  
+			    return dynPRAlg(ds12, verbose);  
 		} else if (alg == "ccfromscratch") {
 	    	if (is_adList && ds->weighted)
-				return CCStartFromScratch(ds0);
+				return CCStartFromScratch(ds0, verbose);
 	    	else if (is_adList && !ds->weighted)
-				return CCStartFromScratch(ds1);
+				return CCStartFromScratch(ds1, verbose);
 	    	else if (is_rhh && ds->weighted)
-				return CCStartFromScratch(ds2);
+				return CCStartFromScratch(ds2, verbose);
 	    	else if (is_rhh && !ds->weighted)
-				return CCStartFromScratch(ds3);
+				return CCStartFromScratch(ds3, verbose);
 	    	else if (is_stinger)
-				return CCStartFromScratch(ds4);
+				return CCStartFromScratch(ds4, verbose);
 	    	else if (is_adList2 && ds->weighted)
-				return CCStartFromScratch(ds5);
+				return CCStartFromScratch(ds5, verbose);
 	    	else if (is_adList2 && !ds->weighted)
-				return CCStartFromScratch(ds6);	 
+				return CCStartFromScratch(ds6, verbose);	 
 			else if (is_adListST && ds->weighted)
-                return CCStartFromScratch(ds7);
+                return CCStartFromScratch(ds7, verbose);
 			else if (is_adListST && !ds->weighted) 
-			    return CCStartFromScratch(ds8);
+			    return CCStartFromScratch(ds8, verbose);
 			else if (is_abslBtreeSet && ds->weighted)
-				return CCStartFromScratch(ds9);
+				return CCStartFromScratch(ds9, verbose);
 			else if (is_abslBtreeSet && !ds->weighted) 
-			    return CCStartFromScratch(ds10);
+			    return CCStartFromScratch(ds10, verbose);
 			else if (is_abslBtreeSetShared && ds->weighted)
-				return CCStartFromScratch(ds11);
+				return CCStartFromScratch(ds11, verbose);
 			else if (is_abslBtreeSetShared && !ds->weighted) 
-			    return CCStartFromScratch(ds12);     
+			    return CCStartFromScratch(ds12, verbose);     
 		} else if (alg == "ccdyn") {
 	    	if (is_adList && ds->weighted)
-				return dynCCAlg(ds0);
+				return dynCCAlg(ds0, verbose);
 	    	else if (is_adList && !ds->weighted)
-				return dynCCAlg(ds1);
+				return dynCCAlg(ds1, verbose);
 	    	else if (is_rhh && ds->weighted)
-				return dynCCAlg(ds2);
+				return dynCCAlg(ds2, verbose);
 	    	else if (is_rhh && !ds->weighted)
-		  		return dynCCAlg(ds3);
+		  		return dynCCAlg(ds3, verbose);
 	    	else if (is_stinger)
-				return dynCCAlg(ds4);		
+				return dynCCAlg(ds4, verbose);		
 	    	else if (is_adList2 && ds->weighted)
-				return dynCCAlg(ds5);
+				return dynCCAlg(ds5, verbose);
 	    	else if (is_adList2 && !ds->weighted)
-				return dynCCAlg(ds6);	
+				return dynCCAlg(ds6, verbose);	
 			else if (is_adListST && ds->weighted)
-                return dynCCAlg(ds7);
+                return dynCCAlg(ds7, verbose);
 			else if (is_adListST && !ds->weighted) 
-			    return dynCCAlg(ds8);    
+			    return dynCCAlg(ds8, verbose);    
 			else if (is_abslBtreeSet && ds->weighted)
-				return dynCCAlg(ds9);
+				return dynCCAlg(ds9, verbose);
 			else if (is_abslBtreeSet && !ds->weighted) 
-			    return dynCCAlg(ds10);
+			    return dynCCAlg(ds10, verbose);
 			else if (is_abslBtreeSetShared && ds->weighted)	
-				return dynCCAlg(ds11);
+				return dynCCAlg(ds11, verbose);
 			else if (is_abslBtreeSetShared && !ds->weighted) 
-			    return dynCCAlg(ds12);
+			    return dynCCAlg(ds12, verbose);
 		} else if (alg == "mcfromscratch") {
 	    	if (is_adList && ds->weighted)
-				return MCStartFromScratch(ds0);
+				return MCStartFromScratch(ds0, verbose);
 	    	else if (is_adList && !ds->weighted)
-				return MCStartFromScratch(ds1);
+				return MCStartFromScratch(ds1, verbose);
 	    	else if (is_rhh && ds->weighted)
-				return MCStartFromScratch(ds2);
+				return MCStartFromScratch(ds2, verbose);
 	    	else if (is_rhh && !ds->weighted)
-				return MCStartFromScratch(ds3);
+				return MCStartFromScratch(ds3, verbose);
 	    	else if (is_stinger)
-				return MCStartFromScratch(ds4);			
+				return MCStartFromScratch(ds4, verbose);			
 	    	else if (is_adList2 && ds->weighted)
-				return MCStartFromScratch(ds5);
+				return MCStartFromScratch(ds5, verbose);
 	    	else if (is_adList2 && !ds->weighted)
-				return MCStartFromScratch(ds6);   
+				return MCStartFromScratch(ds6, verbose);   
 			else if (is_adListST && ds->weighted)
-                return MCStartFromScratch(ds7);
+                return MCStartFromScratch(ds7, verbose);
 			else if (is_adListST && !ds->weighted) 
-			    return MCStartFromScratch(ds8); 
+			    return MCStartFromScratch(ds8, verbose); 
 			else if (is_abslBtreeSet && ds->weighted)		
-				return MCStartFromScratch(ds9);
+				return MCStartFromScratch(ds9, verbose);
 			else if (is_abslBtreeSet && !ds->weighted) 
-			    return MCStartFromScratch(ds10);  
+			    return MCStartFromScratch(ds10, verbose);  
 			else if (is_abslBtreeSetShared && ds->weighted)		
-				return MCStartFromScratch(ds11);
+				return MCStartFromScratch(ds11, verbose);
 			else if (is_abslBtreeSetShared && !ds->weighted) 
-			    return MCStartFromScratch(ds12); 
+			    return MCStartFromScratch(ds12, verbose); 
 		} else if (alg == "mcdyn") {
 	    	if (is_adList && ds->weighted)
-				return dynMCAlg(ds0);
+				return dynMCAlg(ds0, verbose);
 	    	else if (is_adList && !ds->weighted)
-				return dynMCAlg(ds1);
+				return dynMCAlg(ds1, verbose);
 	    	else if (is_rhh && ds->weighted)
-				return dynMCAlg(ds2);
+				return dynMCAlg(ds2, verbose);
 	    	else if (is_rhh && !ds->weighted)
-				return dynMCAlg(ds3);
+				return dynMCAlg(ds3, verbose);
 	    	else if (is_stinger)
-				return dynMCAlg(ds4);		
+				return dynMCAlg(ds4, verbose);		
 	    	else if (is_adList2 && ds->weighted)
-				return dynMCAlg(ds5);
+				return dynMCAlg(ds5, verbose);
 	    	else if (is_adList2 && !ds->weighted)
-				return dynMCAlg(ds6);	   
+				return dynMCAlg(ds6, verbose);	   
 			else if (is_adListST && ds->weighted)
-                return dynMCAlg(ds7);
+                return dynMCAlg(ds7, verbose);
 			else if (is_adListST && !ds->weighted) 
-			    return dynMCAlg(ds8); 
+			    return dynMCAlg(ds8, verbose); 
 			else if (is_abslBtreeSet && ds->weighted)
-				return dynMCAlg(ds9);
+				return dynMCAlg(ds9, verbose);
 			else if (is_abslBtreeSet && !ds->weighted) 
-			    return dynMCAlg(ds10);
+			    return dynMCAlg(ds10, verbose);
 			else if (is_abslBtreeSetShared && ds->weighted)	
-				return dynMCAlg(ds11);
+				return dynMCAlg(ds11, verbose);
 			else if (is_abslBtreeSetShared && !ds->weighted) 
-			    return dynMCAlg(ds12);
+			    return dynMCAlg(ds12, verbose);
 		} else if (alg == "bfsfromscratch") {
 	    	if (source == -1) {
 				DynamicSourcePicker sp(ds);
@@ -302,31 +302,31 @@ public:
 		    		return;
 	   		}
 	    	if (is_adList && ds->weighted)
-				return dynBFSAlg(ds0, source,verbose);
+				return dynBFSAlg(ds0, source, verbose);
 	    	else if (is_adList && !ds->weighted)
-				return dynBFSAlg(ds1, source,verbose);
+				return dynBFSAlg(ds1, source, verbose);
 	    	else if (is_rhh && ds->weighted)
-				return dynBFSAlg(ds2, source,verbose);
+				return dynBFSAlg(ds2, source, verbose);
 	    	else if (is_rhh && !ds->weighted)
-				return dynBFSAlg(ds3, source,verbose);
+				return dynBFSAlg(ds3, source, verbose);
 	    	else if (is_stinger)
-				return dynBFSAlg(ds4, source,verbose);	 
+				return dynBFSAlg(ds4, source, verbose);	 
 	    	else if (is_adList2 && ds->weighted)
-				return dynBFSAlg(ds5, source,verbose);
+				return dynBFSAlg(ds5, source, verbose);
 	    	else if (is_adList2 && !ds->weighted)
-				return dynBFSAlg(ds6, source,verbose);  
+				return dynBFSAlg(ds6, source, verbose);  
 			else if (is_adListST && ds->weighted)
-                return dynBFSAlg(ds7, source,verbose);
+                return dynBFSAlg(ds7, source, verbose);
 			else if (is_adListST && !ds->weighted) 
-			    return dynBFSAlg(ds8, source,verbose);
+			    return dynBFSAlg(ds8, source, verbose);
 			else if (is_abslBtreeSet && ds->weighted)
-				return dynBFSAlg(ds9, source,verbose);		
+				return dynBFSAlg(ds9, source, verbose);		
 			else if (is_abslBtreeSet && !ds->weighted) 
-			    return dynBFSAlg(ds10, source,verbose);
+			    return dynBFSAlg(ds10, source, verbose);
 			else if (is_abslBtreeSetShared && ds->weighted)	
-				return dynBFSAlg(ds11, source,verbose);
+				return dynBFSAlg(ds11, source, verbose);
 			else if (is_abslBtreeSetShared && !ds->weighted) 
-			    return dynBFSAlg(ds12, source,verbose);
+			    return dynBFSAlg(ds12, source, verbose);
 		} else if (alg == "ssspfromscratch") {
 	    	if (source == -1) {
 				DynamicSourcePicker sp(ds);
@@ -336,31 +336,31 @@ public:
 		    	return;
 	    	}
 	    	if (is_adList && ds->weighted)
-				return SSSPStartFromScratch(ds0, source, 1);
+				return SSSPStartFromScratch(ds0, source, 1, verbose);
 	    	else if (is_adList && !ds->weighted)
-				return SSSPStartFromScratch(ds1, source, 1);
+				return SSSPStartFromScratch(ds1, source, 1, verbose);
 	   		else if (is_rhh && ds->weighted)
-				return SSSPStartFromScratch(ds2, source, 1);
+				return SSSPStartFromScratch(ds2, source, 1, verbose);
 	    	else if (is_rhh && !ds->weighted)
-				return SSSPStartFromScratch(ds3, source, 1);
+				return SSSPStartFromScratch(ds3, source, 1, verbose);
 	    	else if (is_stinger)
-				return SSSPStartFromScratch(ds4, source, 1);	    
+				return SSSPStartFromScratch(ds4, source, 1, verbose);	    
 	    	else if (is_adList2 && ds->weighted)
-				return SSSPStartFromScratch(ds5, source, 1);
+				return SSSPStartFromScratch(ds5, source, 1, verbose);
 	    	else if (is_adList2 && !ds->weighted)
-				return SSSPStartFromScratch(ds6, source, 1);
+				return SSSPStartFromScratch(ds6, source, 1, verbose);
 			else if (is_adListST && ds->weighted)
-                return SSSPStartFromScratch(ds7, source, 1);
+                return SSSPStartFromScratch(ds7, source, 1, verbose);
 			else if (is_adListST && !ds->weighted) 
-			    return SSSPStartFromScratch(ds8, source, 1);
+			    return SSSPStartFromScratch(ds8, source, 1, verbose);
 			else if (is_abslBtreeSet && ds->weighted)
-				return SSSPStartFromScratch(ds9, source, 1);		
+				return SSSPStartFromScratch(ds9, source, 1, verbose);		
 			else if (is_abslBtreeSet && !ds->weighted) 
-			    return SSSPStartFromScratch(ds10, source, 1);
+			    return SSSPStartFromScratch(ds10, source, 1, verbose);
 			else if (is_abslBtreeSetShared && ds->weighted)
-				return SSSPStartFromScratch(ds11, source, 1);		
+				return SSSPStartFromScratch(ds11, source, 1, verbose);		
 			else if (is_abslBtreeSetShared && !ds->weighted) 
-			    return SSSPStartFromScratch(ds12, source, 1);
+			    return SSSPStartFromScratch(ds12, source, 1, verbose);
 		} else if (alg == "ssspdyn") {
 		    if (source == -1) {
 				DynamicSourcePicker sp(ds);
@@ -370,31 +370,31 @@ public:
 		    		return;
 	    	}
 	    	if (is_adList && ds->weighted)
-				return dynSSSPAlg(ds0, source);
+				return dynSSSPAlg(ds0, source, verbose);
 	    	else if (is_adList && !ds->weighted)
-				return dynSSSPAlg(ds1, source);
+				return dynSSSPAlg(ds1, source, verbose);
 	    	else if (is_rhh && ds->weighted)
-				return dynSSSPAlg(ds2, source);
+				return dynSSSPAlg(ds2, source, verbose);
 	    	else if (is_rhh && !ds->weighted)
-				return dynSSSPAlg(ds3, source);
+				return dynSSSPAlg(ds3, source, verbose);
 	    	else if (is_stinger)
-				return dynSSSPAlg(ds4, source);	   
+				return dynSSSPAlg(ds4, source, verbose);	   
 	    	else if (is_adList2 && ds->weighted)
-				return dynSSSPAlg(ds5, source);
+				return dynSSSPAlg(ds5, source, verbose);
 	    	else if (is_adList2 && !ds->weighted)
-				return dynSSSPAlg(ds6, source);
+				return dynSSSPAlg(ds6, source, verbose);
 			else if (is_adListST && ds->weighted)
-                return dynSSSPAlg(ds7, source);
+                return dynSSSPAlg(ds7, source, verbose);
 			else if (is_adListST && !ds->weighted) 
-			    return dynSSSPAlg(ds8, source);
+			    return dynSSSPAlg(ds8, source, verbose);
 			else if (is_abslBtreeSet && ds->weighted)		
-				return dynSSSPAlg(ds9, source);
+				return dynSSSPAlg(ds9, source, verbose);
 			else if (is_abslBtreeSet && !ds->weighted) 
-			    return dynSSSPAlg(ds10, source);
+			    return dynSSSPAlg(ds10, source, verbose);
 			else if (is_abslBtreeSetShared && ds->weighted)	
-				return dynSSSPAlg(ds11, source);
+				return dynSSSPAlg(ds11, source, verbose);
 			else if (is_abslBtreeSetShared && !ds->weighted) 
-			    return dynSSSPAlg(ds12, source);
+			    return dynSSSPAlg(ds12, source, verbose);
 		} else if (alg == "sswpfromscratch") {
 	    	if (source == -1) {
 				DynamicSourcePicker sp(ds);
@@ -404,31 +404,31 @@ public:
 				    return;
 	    	}
 	    	if (is_adList && ds->weighted)
-				return SSWPStartFromScratch(ds0, source);
+				return SSWPStartFromScratch(ds0, source, verbose);
 	    	else if (is_adList && !ds->weighted)
-				return SSWPStartFromScratch(ds1, source);
+				return SSWPStartFromScratch(ds1, source, verbose);
 	    	else if (is_rhh && ds->weighted)
-				return SSWPStartFromScratch(ds2, source);
+				return SSWPStartFromScratch(ds2, source, verbose);
 	    	else if (is_rhh && !ds->weighted)
-				return SSWPStartFromScratch(ds3, source);
+				return SSWPStartFromScratch(ds3, source, verbose);
 	    	else if (is_stinger)
-				return SSWPStartFromScratch(ds4, source);	   
+				return SSWPStartFromScratch(ds4, source, verbose);	   
 	    	else if (is_adList2 && ds->weighted)
-				return SSWPStartFromScratch(ds5, source);
+				return SSWPStartFromScratch(ds5, source, verbose);
 	    	else if (is_adList2 && !ds->weighted)
-				return SSWPStartFromScratch(ds6, source);
+				return SSWPStartFromScratch(ds6, source, verbose);
 			else if (is_adListST && ds->weighted)
-                return SSWPStartFromScratch(ds7, source);
+                return SSWPStartFromScratch(ds7, source, verbose);
 			else if (is_adListST && !ds->weighted) 
-			    return SSWPStartFromScratch(ds8, source);
+			    return SSWPStartFromScratch(ds8, source, verbose);
 			else if (is_abslBtreeSet && ds->weighted)		
-				return SSWPStartFromScratch(ds9, source);
+				return SSWPStartFromScratch(ds9, source, verbose);
 			else if (is_abslBtreeSet && !ds->weighted) 
-			    return SSWPStartFromScratch(ds10, source);
+			    return SSWPStartFromScratch(ds10, source, verbose);
 			else if (is_abslBtreeSetShared && ds->weighted)
-				return SSWPStartFromScratch(ds11, source);		
+				return SSWPStartFromScratch(ds11, source, verbose);		
 			else if (is_abslBtreeSetShared && !ds->weighted) 
-			    return SSWPStartFromScratch(ds12, source);
+			    return SSWPStartFromScratch(ds12, source, verbose);
 		} else if (alg == "sswpdyn") {
 
 	    	if(source == -1) {
@@ -439,31 +439,31 @@ public:
 				    return;
 	    	}
 	    	if (is_adList && ds->weighted)
-				return dynSSWPAlg(ds0, source);
+				return dynSSWPAlg(ds0, source, verbose);
 	    	else if (is_adList && !ds->weighted)
-				return dynSSWPAlg(ds1, source);
+				return dynSSWPAlg(ds1, source, verbose);
 	    	else if (is_rhh && ds->weighted)
-				return dynSSWPAlg(ds2, source);
+				return dynSSWPAlg(ds2, source, verbose);
 	    	else if (is_rhh && !ds->weighted)
-				return dynSSWPAlg(ds3, source);
+				return dynSSWPAlg(ds3, source, verbose);
 	    	else if (is_stinger)
-				return dynSSWPAlg(ds4, source);	    
+				return dynSSWPAlg(ds4, source, verbose);	    
 	    	else if (is_adList2 && ds->weighted)
-				return dynSSWPAlg(ds5, source);
+				return dynSSWPAlg(ds5, source, verbose);
 	    	else if (is_adList2 && !ds->weighted)
-				return dynSSWPAlg(ds6, source);
+				return dynSSWPAlg(ds6, source, verbose);
 			else if (is_adListST && ds->weighted)
-                return dynSSWPAlg(ds7, source);
+                return dynSSWPAlg(ds7, source, verbose);
 			else if (is_adListST && !ds->weighted) 
-			    return dynSSWPAlg(ds8, source);
+			    return dynSSWPAlg(ds8, source, verbose);
 			else if (is_abslBtreeSet && ds->weighted)		
-				return dynSSWPAlg(ds9, source);		
+				return dynSSWPAlg(ds9, source, verbose);		
 			else if (is_abslBtreeSet && !ds->weighted) 
-			    return dynSSWPAlg(ds10, source);
+			    return dynSSWPAlg(ds10, source, verbose);
 			else if (is_abslBtreeSetShared && ds->weighted)	
-				return dynSSWPAlg(ds11, source);
+				return dynSSWPAlg(ds11, source, verbose);
 			else if (is_abslBtreeSetShared && !ds->weighted) 
-			    return dynSSWPAlg(ds12, source);
+			    return dynSSWPAlg(ds12, source, verbose);
 		} else {
 	    	std::cout << "Error! Unrecognized Algorithm!" << std::endl;
 	    	exit(0);
