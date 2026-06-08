@@ -268,31 +268,31 @@ public:
 		    	return;
 	    	}
 	    	if (is_adList && ds->weighted)
-				return BFSStartFromScratch(ds0, source);
+				return BFSStartFromScratch(ds0, source, verbose);
 	    	else if (is_adList && !ds->weighted)
-				return BFSStartFromScratch(ds1, source);
+				return BFSStartFromScratch(ds1, source, verbose);
 	    	else if (is_rhh && ds->weighted)
-				return BFSStartFromScratch(ds2, source);
+				return BFSStartFromScratch(ds2, source, verbose);
 	    	else if (is_rhh && !ds->weighted)
-				return BFSStartFromScratch(ds3, source);
+				return BFSStartFromScratch(ds3, source, verbose);
 	    	else if (is_stinger)
-				return BFSStartFromScratch(ds4, source);			
+				return BFSStartFromScratch(ds4, source, verbose);			
 	    	else if (is_adList2 && ds->weighted)
-				return BFSStartFromScratch(ds5, source);
+				return BFSStartFromScratch(ds5, source, verbose);
 	    	else if (is_adList2 && !ds->weighted)
-				return BFSStartFromScratch(ds6, source);   
+				return BFSStartFromScratch(ds6, source, verbose);   
 			else if (is_adListST && ds->weighted)
-                return BFSStartFromScratch(ds7, source);
+                return BFSStartFromScratch(ds7, source, verbose);
 			else if (is_adListST && !ds->weighted) 
-			    return BFSStartFromScratch(ds8, source);
+			    return BFSStartFromScratch(ds8, source, verbose);
 			else if (is_abslBtreeSet && ds->weighted)
-				return BFSStartFromScratch(ds9, source);
+				return BFSStartFromScratch(ds9, source, verbose);
 			else if (is_abslBtreeSet && !ds->weighted) 
-			    return BFSStartFromScratch(ds10, source);
+			    return BFSStartFromScratch(ds10, source, verbose);
 			else if (is_abslBtreeSetShared && ds->weighted)
-				return BFSStartFromScratch(ds11, source);
+				return BFSStartFromScratch(ds11, source, verbose);
 			else if (is_abslBtreeSetShared && !ds->weighted) 
-			    return BFSStartFromScratch(ds12, source);  
+			    return BFSStartFromScratch(ds12, source, verbose);  
 		} else if (alg == "bfsdyn") {
 	    	if(source == -1){
 				DynamicSourcePicker sp(ds);

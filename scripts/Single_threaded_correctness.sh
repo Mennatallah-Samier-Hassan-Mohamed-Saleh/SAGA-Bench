@@ -35,4 +35,4 @@ echo "Successfully moved to sagaDir: $PWD"
 
 #Testing traverse on different data structures for Facebook dataset
 echo "Starting traverse tests on adListShared for facebook dataset"
-./frontEnd -d 0 -w 0 -f $SCRATCH/datasets/SAGAdatasets/facebook.csv -b 88234 -s adListShared -a bfsdyn -t 1 -v 0s
+./frontEnd -d 0 -w 0 -f $SCRATCH/datasets/SAGAdatasets/facebook.csv -b 88234 -s adListShared -a bfsdyn -t 1 -v 0

@@ -157,7 +157,7 @@ void dynBFSAlg(T* ds, NodeID source,bool verbose){
 }  
 
 template<typename T> 
-void BFSStartFromScratch(T* ds, NodeID source){  
+void BFSStartFromScratch(T* ds, NodeID source, bool verbose){  
     std::cout << "Source " << source << std::endl;
     std::cout << "Running BFS from scratch" << std::endl;
 
@@ -200,13 +200,15 @@ void BFSStartFromScratch(T* ds, NodeID source){
         }
         queue.slide_window();        
     }
-    for (NodeID n = 0; n < ds->num_nodes; n++) 
-    {
-        std::cout << "Distance to " << n << ": " << distances[n] << std::endl;
-    }
     t.Stop();    
     ofstream out("Alg.csv", std::ios_base::app);   
     out << t.Seconds() << std::endl;    
     out.close();
+    if (verbose){
+        for (NodeID n = 0; n < ds->num_nodes; n++) 
+        {
+            std::cout << "Distance to " << n << ": " << distances[n] << std::endl;
+        }
+    }
 }
 #endif  // DYN_BFS_H_    
