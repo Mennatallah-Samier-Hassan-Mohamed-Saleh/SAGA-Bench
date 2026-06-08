@@ -53,7 +53,7 @@ void printUsage()
 		  << "-i initial batchSize    initial batch size (optional for scalability tests)\n"
 		  << "-l weight_min       	min weight for random weight generation (default: 2)\n"
 	      << "-u weight_max       	max weight for random weight generation (default: 2)\n"
-		  << "-v verbose             print algorithms output (default: false)\n"
+		  << "-v verbose            print algorithms' output 0=don't print, 1=print\n"
 	      << "  DATA STRUCTURE OPTIONS:\n"
 		  << "               	1) adList (single-threaded) \n"		  
 	      << "               	2) adListShared (multihtreaded shared style) \n"
@@ -83,7 +83,7 @@ cmd_args parse(int argc, char *argv[])
 {
     cmd_args args;
     int opt = 0;
-    while(-1 != (opt = getopt(argc, argv, "f:b:w:d:s:n:a:t:i:l:u:h:v"))) {
+    while(-1 != (opt = getopt(argc, argv, "f:b:w:d:s:n:a:t:i:l:u:v:h"))) {
         switch(opt) {
 	case 'f':               
 	    args.flags |= 8;
@@ -148,16 +148,24 @@ cmd_args parse(int argc, char *argv[])
 	case 'u':
 	    args.max_weight = atol(optarg);
 	    break;
+	case 'v':
+	if (atoi(optarg) == 1) {
+	    args.verbose = true;
+	} else if (atoi(optarg) == 0) {
+	    args.verbose = false;
+	} else {
+	    std::cout << "Verbose only takes 0 or 1" << std::endl;
+	    printUsage();
+		exit(-1);
+	}
+		break;
 	case 'h':
 	    std::cout << "Printing help" << std::endl;
 	    printUsage();
 	    exit(0);
 	    break;
-	case 'v':
-	    args.verbose = true;
-	    break;
-        }
-    }
+	}
+}
     bool quit = false;
     if ((args.flags & 0x1) == 0) {
         std::cout << "Missing direction" << std::endl;
