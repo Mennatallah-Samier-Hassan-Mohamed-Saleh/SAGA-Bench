@@ -17,8 +17,8 @@ const float PRThreshold = 0.0000001;
 template <typename T>
 void PRIter0(T *ds, SlidingQueue<NodeID> &queue, Rank base_score)
 {
-    pvector<Rank> outgoing_contrib(ds->num_nodes, 0);
-    pvector<bool> visited(ds->num_nodes, false);
+    pvector<Rank> outgoing_contrib(ds->num_nodes_max, 0);
+    pvector<bool> visited(ds->num_nodes_max, false);
 #pragma omp parallel for schedule(dynamic, 64)
     for (NodeID n = 0; n < ds->num_nodes; n++)
     {
@@ -69,7 +69,7 @@ void dynPRAlg(T *ds, bool verbose)
     Timer t;
     t.Start();
 
-    SlidingQueue<NodeID> queue(ds->num_nodes);
+    SlidingQueue<NodeID> queue(ds->num_nodes_max);
     const Rank base_score = (1.0f - kDamp) / (ds->num_nodes);
     // set all new vertices' rank to 1/num_nodes, otherwise reuse old values
 #pragma omp parallel for schedule(dynamic, 64)
@@ -93,8 +93,8 @@ void dynPRAlg(T *ds, bool verbose)
     while (!queue.empty())
     {
         // std::cout << "Not empty queue, Queue Size:" << queue.size() << std::endl;
-        pvector<Rank> outgoing_contrib(ds->num_nodes, 0);
-        pvector<bool> visited(ds->num_nodes, false);
+        pvector<Rank> outgoing_contrib(ds->num_nodes_max, 0);
+        pvector<bool> visited(ds->num_nodes_max, false);
 #pragma omp parallel for
         for (NodeID n = 0; n < ds->num_nodes; n++)
         {
@@ -173,7 +173,7 @@ void PRStartFromScratch(T *ds, bool verbose)
     {
         ds->property[n] = 1.0f / (ds->num_nodes);
     }
-    pvector<Rank> outgoing_contrib(ds->num_nodes, 0);
+    pvector<Rank> outgoing_contrib(ds->num_nodes_max, 0);
     for (int iter = 0; iter < max_iters; iter++)
     {
         double error = 0;
