@@ -13,13 +13,13 @@
 template <typename T>
 void MCIter0(T *ds, SlidingQueue<NodeID> &queue)
 {
-    pvector<bool> visited(ds->num_nodes, false);
+    pvector<bool> visited(ds->num_nodes_max, false);
 
 #pragma omp parallel
     {
         QueueBuffer<NodeID> lqueue(queue);
 #pragma omp for schedule(dynamic, 64)
-        for (NodeID n = 0; n < ds->num_nodes; n++)
+        for (NodeID n = 0; n < ds->num_nodes_max; n++)
         {
             if (ds->affected[n])
             {
@@ -64,11 +64,11 @@ void dynMCAlg(T *ds, bool verbose)
     Timer t;
     t.Start();
 
-    SlidingQueue<NodeID> queue(ds->num_nodes);
+    SlidingQueue<NodeID> queue(ds->num_nodes_max);
 
 // Assign value of newly added vertices
 #pragma omp parallel for schedule(dynamic, 64)
-    for (NodeID n = 0; n < ds->num_nodes; n++)
+    for (NodeID n = 0; n < ds->num_nodes_max; n++)
     {
         if (ds->property[n] == -1)
         {
@@ -82,7 +82,7 @@ void dynMCAlg(T *ds, bool verbose)
     while (!queue.empty())
     {
         // std::cout << "Queue not empty, Queue size: " << queue.size() << std::endl;
-        pvector<bool> visited(ds->num_nodes, false);
+        pvector<bool> visited(ds->num_nodes_max, false);
 
 #pragma omp parallel
         {
@@ -125,7 +125,7 @@ void dynMCAlg(T *ds, bool verbose)
 
 // clear affected array to get ready for the next update round
 #pragma omp parallel for schedule(dynamic, 64)
-    for (NodeID i = 0; i < ds->num_nodes; i++)
+    for (NodeID i = 0; i < ds->num_nodes_max; i++)
     {
         ds->affected[i] = false;
     }
@@ -138,7 +138,7 @@ void dynMCAlg(T *ds, bool verbose)
     if (verbose)
     {
         // Print the MC for each node
-        for (NodeID n = 0; n < ds->num_nodes; n++)
+        for (NodeID n = 0; n < ds->num_nodes_max; n++)
         {
             std::cout << "Node " << n << " : has MC value: " << ds->property[n] << std::endl;
         }
@@ -154,18 +154,18 @@ void MCStartFromScratch(T *ds, bool verbose)
     t.Start();
 
 #pragma omp parallel for
-    for (NodeID n = 0; n < ds->num_nodes; n++)
+    for (NodeID n = 0; n < ds->num_nodes_max; n++)
         ds->property[n] = n;
 
-    SlidingQueue<NodeID> queue(ds->num_nodes);
-    pvector<bool> visited(ds->num_nodes, false);
+    SlidingQueue<NodeID> queue(ds->num_nodes_max);
+    pvector<bool> visited(ds->num_nodes_max, false);
 
 // first iteration: all active vertices
 #pragma omp parallel
     {
         QueueBuffer<NodeID> lqueue(queue);
 #pragma omp for
-        for (NodeID n = 0; n < ds->num_nodes; n++)
+        for (NodeID n = 0; n < ds->num_nodes_max; n++)
         {
             float old_val = ds->property[n];
             float new_val = old_val;
@@ -245,7 +245,7 @@ void MCStartFromScratch(T *ds, bool verbose)
     if (verbose)
     {
         // Print the MC for each node
-        for (NodeID n = 0; n < ds->num_nodes; n++)
+        for (NodeID n = 0; n < ds->num_nodes_max; n++)
         {
             std::cout << "Node " << n << " : has MC value: " << ds->property[n] << std::endl;
         }
