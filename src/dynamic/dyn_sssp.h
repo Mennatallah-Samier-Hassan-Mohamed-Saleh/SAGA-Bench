@@ -15,7 +15,7 @@
 template <typename T>
 void SSSPIter0(T *ds, SlidingQueue<NodeID> &queue)
 {
-    pvector<bool> visited(ds->num_nodes, false);
+    pvector<bool> visited(ds->num_nodes_max, false);
 
 #pragma omp parallel
     {
@@ -65,7 +65,7 @@ void dynSSSPAlg(T *ds, NodeID source, bool verbose)
     Timer t;
     t.Start();
 
-    SlidingQueue<NodeID> queue(ds->num_nodes);
+    SlidingQueue<NodeID> queue(ds->num_nodes_max);
 
 // set all new vertices' rank to inf, otherwise reuse old values
 #pragma omp parallel for schedule(dynamic, 64)
@@ -86,7 +86,7 @@ void dynSSSPAlg(T *ds, NodeID source, bool verbose)
     while (!queue.empty())
     {
         // std::cout << "Not empty queue, Queue Size:" << queue.size() << std::endl;
-        pvector<bool> visited(ds->num_nodes, false);
+        pvector<bool> visited(ds->num_nodes_max, false);
 
 #pragma omp parallel
         {
@@ -131,7 +131,7 @@ void dynSSSPAlg(T *ds, NodeID source, bool verbose)
 
 // clear affected array to get ready for the next update round
 #pragma omp parallel for schedule(dynamic, 64)
-    for (NodeID i = 0; i < ds->num_nodes; i++)
+    for (NodeID i = 0; i < ds->num_nodes_max; i++)
     {
         ds->affected[i] = false;
     }
@@ -144,7 +144,7 @@ void dynSSSPAlg(T *ds, NodeID source, bool verbose)
     if (verbose)
     {
         // Print the SSSP for each node
-        for (NodeID n = 0; n < ds->num_nodes; n++)
+        for (NodeID n = 0; n < ds->num_nodes_max; n++)
         {
             std::cout << "Node " << n << " : has SSSP value: " << ds->property[n] << std::endl;
         }
@@ -162,7 +162,7 @@ void SSSPStartFromScratch(T *ds, NodeID source, float delta, bool verbose)
     int num_edges_directed = ds->directed ? ds->num_edges : 2 * ds->num_edges;
 
 #pragma omp parallel for
-    for (NodeID n = 0; n < ds->num_nodes; n++)
+    for (NodeID n = 0; n < ds->num_nodes_max; n++)
         ds->property[n] = kDistInf;
     ds->property[source] = 0;
 
@@ -261,7 +261,7 @@ void SSSPStartFromScratch(T *ds, NodeID source, float delta, bool verbose)
     if (verbose)
     {
         // Print the SSSP for each node
-        for (NodeID n = 0; n < ds->num_nodes; n++)
+        for (NodeID n = 0; n < ds->num_nodes_max; n++)
         {
             std::cout << "Node " << n << " : has SSSP value: " << ds->property[n] << std::endl;
         }
