@@ -19,7 +19,7 @@ void BFSIter0(T* ds, SlidingQueue<NodeID>& queue){
     {
         QueueBuffer<NodeID> lqueue(queue);
         #pragma omp for schedule(dynamic, 64)
-        for(NodeID n=0; n < ds->num_nodes; n++){
+        for(NodeID n=0; n < ds->num_nodes_max; n++){
             if(ds->affected[n]){
                 float old_depth = ds->property[n];
                 float new_depth = std::numeric_limits<float>::max();
@@ -141,7 +141,7 @@ void dynBFSAlg(T* ds, NodeID source,bool verbose){
 
     // clear affected array to get ready for the next update round
     #pragma omp parallel for schedule(dynamic, 64)
-    for(NodeID i = 0; i < ds->num_nodes; i++){
+    for(NodeID i = 0; i < ds->num_nodes_max; i++){
         ds->affected[i] = false;
     }
     t.Stop();   
@@ -149,7 +149,7 @@ void dynBFSAlg(T* ds, NodeID source,bool verbose){
     out << t.Seconds() << std::endl;    
     out.close();
     if (verbose){
-        for (NodeID n = 0; n < ds->num_nodes; n++) 
+        for (NodeID n = 0; n < ds->num_nodes_max; n++) 
         {
             std::cout << "Distance to " << n << ": " << ds->property[n] << std::endl;
         }
@@ -167,7 +167,7 @@ void BFSStartFromScratch(T* ds, NodeID source, bool verbose){
     t.Start(); 
 
     #pragma omp parallel for 
-    for(NodeID n = 0; n < ds->num_nodes; n++)
+    for(NodeID n = 0; n < ds->num_nodes_max; n++)
         ds->property[n] = -1;
 
     ds->property[source] = 0;    
@@ -205,7 +205,7 @@ void BFSStartFromScratch(T* ds, NodeID source, bool verbose){
     out << t.Seconds() << std::endl;    
     out.close();
     if (verbose){
-        for (NodeID n = 0; n < ds->num_nodes; n++) 
+        for (NodeID n = 0; n < ds->num_nodes_max; n++) 
         {
             std::cout << "Distance to " << n << ": " << distances[n] << std::endl;
         }
