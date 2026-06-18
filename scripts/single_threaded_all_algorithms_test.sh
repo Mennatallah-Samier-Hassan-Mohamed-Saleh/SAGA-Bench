@@ -2,8 +2,8 @@
 
 #SBATCH -c 1
 #SBATCH -t 24:00:00
-#SBATCH --output=submit.out
-#SBATCH --error=submit.err
+#SBATCH --output=single_threaded_all_algorithms_test.out
+#SBATCH --error=single_threaded_all_algorithms_test.err
 
 set -euo pipefail
 
@@ -47,7 +47,7 @@ declare -A ALGORITHMS=(
 # ─────────────────────────────────────────────
 declare -A DATASETS=(
     [facebook]="$SCRATCH/datasets/SAGAdatasets/facebook.csv        0  4039   88234    1000  10"
-    [slashdot]="$SCRATCH/datasets/SAGAdatasets/slashdot.csv        1  82168  948464   1000  10"
+    [slashdot]="$SCRATCH/datasets/SAGAdatasets/soc-Slashdot0902.clean.noself.txt        1  82168  948464   1000  10"
 )
 
 # ─────────────────────────────────────────────
@@ -88,14 +88,13 @@ for ds_name in facebook slashdot; do
         echo ">>> Starting: $algorithm | weighted=$weighted"
 
         rm -f Alg.csv Update.csv
-
+        echo ">>> CMD: ./frontEnd -d $directed -w $weighted -f $filepath -b $batch_size -s $STRUCTURE -a $algorithm -t $OMP_NUM_THREADS -i $INITIAL_BATCH -v 0"
         if ! ./frontEnd \
             -d "$directed"      \
             -w "$weighted"      \
             -f "$filepath"      \
             -b "$batch_size"    \
             -s "$STRUCTURE"     \
-            -n "$num_nodes"     \
             -a "$algorithm"     \
             -t "$OMP_NUM_THREADS" \
             -i "$INITIAL_BATCH" \
