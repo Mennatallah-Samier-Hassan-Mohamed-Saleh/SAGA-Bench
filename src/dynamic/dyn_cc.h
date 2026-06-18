@@ -107,7 +107,7 @@ void dynCCAlg(T *ds, bool verbose)
     while (!queue.empty())
     {
         // std::cout << "Queue not empty, Queue size: " << queue.size() << std::endl;
-        pvector<bool> visited(ds->num_nodes, false);
+        pvector<bool> visited(ds->num_nodes_max, false);
 
 #pragma omp parallel
         {
@@ -172,7 +172,7 @@ void dynCCAlg(T *ds, bool verbose)
 
 // clear affected array to get ready for the next update round
 #pragma omp parallel for schedule(dynamic, 64)
-    for (NodeID i = 0; i < ds->num_nodes; i++)
+    for (NodeID i = 0; i < ds->num_nodes_max; i++)
     {
         ds->affected[i] = false;
     }
@@ -185,7 +185,7 @@ void dynCCAlg(T *ds, bool verbose)
     if (verbose)
     {
         // Print CC after CC completes
-        for (NodeID n = 0; n < ds->num_nodes; n++)
+        for (NodeID n = 0; n < ds->num_nodes_max; n++)
         {
             std::cout << "Connected component to " << n << ": " << ds->property[n] << std::endl;
         }
@@ -202,7 +202,7 @@ void CCStartFromScratch(T *ds, bool verbose)
     t.Start();
 
 #pragma omp parallel for
-    for (NodeID n = 0; n < ds->num_nodes; n++)
+    for (NodeID n = 0; n < ds->num_nodes_max; n++)
         ds->property[n] = n;
 
     bool change = true;
@@ -215,7 +215,7 @@ void CCStartFromScratch(T *ds, bool verbose)
             change = false;
             num_iter++;
 #pragma omp parallel for
-            for (NodeID u = 0; u < ds->num_nodes; u++)
+            for (NodeID u = 0; u < ds->num_nodes_max; u++)
             {
                 for (NodeID v : out_neigh(u, ds))
                 {
@@ -235,7 +235,7 @@ void CCStartFromScratch(T *ds, bool verbose)
             }
 
 #pragma omp parallel for
-            for (NodeID n = 0; n < ds->num_nodes; n++)
+            for (NodeID n = 0; n < ds->num_nodes_max; n++)
             {
                 while (ds->property[n] != ds->property[ds->property[n]])
                 {
@@ -251,7 +251,7 @@ void CCStartFromScratch(T *ds, bool verbose)
             change = false;
             num_iter++;
 #pragma omp parallel for
-            for (NodeID u = 0; u < ds->num_nodes; u++)
+            for (NodeID u = 0; u < ds->num_nodes_max; u++)
             {
                 NodeID comp_u = ds->property[u];
                 for (NodeID v : out_neigh(u, ds))
@@ -269,7 +269,7 @@ void CCStartFromScratch(T *ds, bool verbose)
             }
 
 #pragma omp parallel for
-            for (NodeID n = 0; n < ds->num_nodes; n++)
+            for (NodeID n = 0; n < ds->num_nodes_max; n++)
             {
                 while (ds->property[n] != ds->property[ds->property[n]])
                 {
@@ -288,7 +288,7 @@ void CCStartFromScratch(T *ds, bool verbose)
     if (verbose)
     {
         // Print CC after CC completes
-        for (NodeID n = 0; n < ds->num_nodes; n++)
+        for (NodeID n = 0; n < ds->num_nodes_max; n++)
         {
             std::cout << "Connected component to " << n << ": " << ds->property[n] << std::endl;
         }
