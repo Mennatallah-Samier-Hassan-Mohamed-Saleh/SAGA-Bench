@@ -21,7 +21,7 @@ void SSWPIter0(T *ds, SlidingQueue<NodeID> &queue)
     {
         QueueBuffer<NodeID> lqueue(queue);
 #pragma omp for schedule(dynamic, 64)
-        for (NodeID n = 0; n < ds->num_nodes; n++)
+        for (NodeID n = 0; n < ds->num_nodes_max; n++)
         {
             if (ds->affected[n])
             {
@@ -80,7 +80,7 @@ void dynSSWPAlg(T *ds, NodeID source, bool verbose)
 
 // set all new vertices' rank to inf, otherwise reuse old values
 #pragma omp parallel for schedule(dynamic, 64)
-    for (NodeID n = 0; n < ds->num_nodes; n++)
+    for (NodeID n = 0; n < ds->num_nodes_max; n++)
     {
         if (ds->property[n] == -1)
         {
