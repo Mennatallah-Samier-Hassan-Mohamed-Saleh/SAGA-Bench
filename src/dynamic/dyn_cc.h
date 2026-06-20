@@ -15,13 +15,13 @@ typedef float Component;
 template <typename T>
 void CCIter0(T *ds, SlidingQueue<NodeID> &queue)
 {
-    pvector<bool> visited(ds->num_nodes, false);
+    pvector<bool> visited(ds->num_nodes_max, false);
 
 #pragma omp parallel
     {
         QueueBuffer<NodeID> lqueue(queue);
 #pragma omp for schedule(dynamic, 64)
-        for (NodeID n = 0; n < ds->num_nodes; n++)
+        for (NodeID n = 0; n < ds->num_nodes_max; n++)
         {
             if (ds->affected[n])
             {
@@ -89,11 +89,11 @@ void dynCCAlg(T *ds, bool verbose)
     Timer t;
     t.Start();
 
-    SlidingQueue<NodeID> queue(ds->num_nodes);
+    SlidingQueue<NodeID> queue(ds->num_nodes_max);
 
 // Assign component of newly added vertices
 #pragma omp parallel for schedule(dynamic, 64)
-    for (NodeID n = 0; n < ds->num_nodes; n++)
+    for (NodeID n = 0; n < ds->num_nodes_max; n++)
     {
         if (ds->property[n] == -1)
         {
