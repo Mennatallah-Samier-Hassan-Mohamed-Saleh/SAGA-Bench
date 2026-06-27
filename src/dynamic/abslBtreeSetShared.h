@@ -141,6 +141,7 @@ void abslBtreeSetShared<T>::update(const EdgeList& el)
 {
     # pragma omp parallel for 
     for (unsigned int k = 0; k < el.size(); k ++) {
+        if (el[k].source == el[k].destination) continue;  // skip self-loops entirely
         processMetaData(el[k], true);
         updateForExistingVertex(el[k], true);
 
