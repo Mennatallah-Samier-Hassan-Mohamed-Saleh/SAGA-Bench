@@ -33,6 +33,16 @@ export sagaDir=$SLURM_SUBMIT_DIR
 cd "$sagaDir" || exit
 echo "Successfully moved to sagaDir: $PWD"
 
-#Testing traverse on different data structures for Facebook dataset
-echo "Starting traverse tests on adListShared for facebook dataset"
-./frontEnd -d 0 -w 0 -f $SCRATCH/datasets/SAGAdatasets/facebook.csv -b 88234 -s adListShared -a bfsdyn -t 1 -v 0
+./frontEnd -d 1 -w 0 -f /scratch/ms13779/datasets/SAGAdatasets/soc-Slashdot0902.txt -b 1000 -s abslBtreeSetShared -a bfsfromscratch -t 1 -v 0 -i 938464
+
+#TOTAL_EDGES=$(wc -l < /scratch/ms13779/datasets/SAGAdatasets/soc-Slashdot0902.clean.noself.txt)
+#INITIAL_BATCH=$((TOTAL_EDGES - 1000 * 10))
+
+#./frontEnd -d 1 -w 0 \
+#  -f /scratch/ms13779/datasets/SAGAdatasets/soc-Slashdot0902.clean.noself.txt \
+#  -b 1000 \
+#  -s abslBtreeSetShared \
+#  -a bfsfromscratch \
+#  -t 1 \
+#  -v 0 \
+#  -i "$INITIAL_BATCH"
