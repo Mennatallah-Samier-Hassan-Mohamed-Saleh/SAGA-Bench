@@ -39,3 +39,5 @@ obj/*
 *.log
 *.csv
 *.err
+*.out
+*.txt
