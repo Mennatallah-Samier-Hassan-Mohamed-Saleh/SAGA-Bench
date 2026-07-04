@@ -196,13 +196,25 @@ void stinger::update(const EdgeList& el)
 {
     #pragma omp parallel for 
     for(unsigned int i=0; i<el.size(); i++){
+        Edge e = el[i];  // local mutable copy (safe: each thread owns its own iteration)
+        bool isSelfLoop = (e.source == e.destination);
+
         // examine source vertex 
-        processMetaData(el[i], true); 
-        updateForVertex(el[i], true);
-        
+        processMetaData(e, true); 
+        updateForVertex(e, true);
+
+        // Self-loop: source and destination are the same node, so both
+        // processMetaData calls read the same nodeSeen-derived flag from
+        // main.cpp. On a first-time self-loop both read "false", double-
+        // incrementing num_nodes for a single node. Force the second
+        // (destination-side) pass to treat the node as already-existing.
+        if (isSelfLoop) {
+            e.destExists = true;
+        }
+
         // examine destination vertex 
-        processMetaData(el[i], false);
-        updateForVertex(el[i], false);  
+        processMetaData(e, false);
+        updateForVertex(e, false);  
     }              
 }
 
