@@ -159,19 +159,29 @@ template <typename T>
 void abslBtreeSet<T>::update(const EdgeList& el)
 {
     for (auto it = el.begin(); it != el.end(); ++it) {
-        //Process source vertex
-        bool exists = vertexExists(*it, true);
-        if (!exists) 
-            updateForNewVertex(*it, true);
-        else 
-            updateForExistingVertex(*it, true);
-        
-        //Process destination vertex
-        bool exists1 = vertexExists(*it, false);
-        if (!exists1) 
-            updateForNewVertex(*it, false);
-        else 
-            updateForExistingVertex(*it, false);
+        Edge e = *it;  // local mutable copy
+        bool isSelfLoop = (e.source == e.destination);
+
+        // Process source vertex
+        bool exists = vertexExists(e, true);
+        if (!exists)
+            updateForNewVertex(e, true);
+        else
+            updateForExistingVertex(e, true);
+
+        // For a self-loop, the node was just accounted for above —
+        // force the second pass to treat it as "existing" so num_nodes
+        // isn't incremented twice for the same node.
+        if (isSelfLoop) {
+            e.destExists = true;
+        }
+
+        // Process destination vertex
+        bool exists1 = vertexExists(e, false);
+        if (!exists1)
+            updateForNewVertex(e, false);
+        else
+            updateForExistingVertex(e, false);
     }
 }
 
