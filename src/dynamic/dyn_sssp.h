@@ -159,7 +159,7 @@ void SSSPStartFromScratch(T *ds, NodeID source, float delta, bool verbose)
     Timer t;
     t.Start();
 
-    int num_edges_directed = ds->directed ? ds->num_edges : 2 * ds->num_edges;
+    int64_t num_edges_directed = ds->directed ? ds->num_edges : 2 * ds->num_edges;
 
 #pragma omp parallel for
     for (NodeID n = 0; n < ds->num_nodes_max; n++)
