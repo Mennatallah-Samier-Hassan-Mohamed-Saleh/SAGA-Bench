@@ -55,9 +55,10 @@ Note: To use other file formats, please change the file `src/dynamic/fileReader.
 SAGA-Bench is implemented in C++11 and the build system uses GNU Make. It uses both OPENMP and std::thread to launch software threads. It has been tested on Ubuntu 18.04 LTS, Ubuntu 16.04 LTS, and CentOS. The experiments for our paper have been run on Intel Xeon Gold 6142 (Skylake) server (please refer to Section IV.A of the paper for more details). 
 
 1. git clone https://github.com/abasak24/SAGA-Bench.git
-2. cd SAGA-Bench
-3. mkdir bin obj
-4. make 
+2. git submodule update --init --recursive
+3. cd SAGA-Bench
+4. mkdir bin obj
+5. make 
 
 An executable `frontEnd` will be created. `frontEnd` should be run with the following parameters. `./frontEnd -help` also provides this information.
 

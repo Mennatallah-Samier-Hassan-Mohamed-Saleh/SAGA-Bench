@@ -4,6 +4,8 @@ CXXFLAGS = -O2 -Wall -Wextra -pedantic -std=c++17 -fopenmp
 
 # Directories
 ABSEIL_DIR := external/abseil-cpp
+CPAM_DIR := external/CPAM/include
+PARLAY_DIR := external/parlaylib/include
 DYN_PREFIX := d_
 DYN_DIR := src/dynamic
 UTL_DIR := src/common
@@ -12,7 +14,7 @@ BIN_DIR := bin
 PIGO_DIR := include
 
 # Includes
-INCLUDES = -I$(ABSEIL_DIR) -I$(DYN_DIR) -I$(UTL_DIR) -I$(PIGO_DIR)
+INCLUDES = -I$(ABSEIL_DIR) -I$(CPAM_DIR) -I$(PARLAY_DIR) -I$(DYN_DIR) -I$(UTL_DIR) -I$(PIGO_DIR)
 CXXFLAGS += $(INCLUDES)
 
 # Source files

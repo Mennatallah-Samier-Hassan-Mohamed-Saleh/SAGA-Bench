@@ -1,3 +1,9 @@
 [submodule "external/abseil-cpp"]
 	path = external/abseil-cpp
 	url = https://github.com/abseil/abseil-cpp.git
+[submodule "external/CPAM"]
+	path = external/CPAM
+	url = https://github.com/ParAlg/CPAM.git
+[submodule "external/parlaylib"]
+	path = external/parlaylib
+	url = https://github.com/cmuparlay/parlaylib.git
