@@ -2,6 +2,7 @@
 #define CPAMSET_H_
 
 #include <iostream>
+#include <unordered_map>
 #include "cpam/cpam.h"
 #include "parlay/sequence.h"
 
@@ -27,7 +28,9 @@ public:
 
 private:
     bool vertexExists(const Edge& e, bool source);
-    void updateVertex(const Edge& e, bool source);
+    void collectVertex(const Edge& e, bool source,
+                        std::unordered_map<NodeID, std::vector<T>>& out_batches,
+                        std::unordered_map<NodeID, std::vector<T>>& in_batches);
 
 public:
     std::vector<edge_tree> out_neighbors;
@@ -77,29 +80,33 @@ bool cpamSet<T>::vertexExists(const Edge& e, bool source)
 }
 
 /**
- * Insert/update a neighbor for vertex e.source or e.destination.
+ * Accumulates a neighbor entry for e.source or e.destination into this
+ * batch's per-vertex staging maps, instead of inserting into the tree
+ * immediately. update() below flushes each touched vertex's staged
+ * entries with ONE multi_insert call per vertex per update() call,
+ * rather than one multi_insert call per edge.
  *
- * Two things differ from abslBtreeSet here, both discovered by actually
- * compiling and running against real CPAM headers:
+ * Why this is worth doing: multi_insert's own cost (sort_remove_duplicates
+ * + multi_insert_sorted) is amortized much better over a real batch than
+ * over repeated size-1 batches — CPAM is designed around bulk construction,
+ * and a real per-vertex batch is what actually exercises that path.
  *
- * 1. insert-or-replace: CPAM's insert already replaces the value on a
- *    duplicate key (map.h: the `replace` lambda returns the *new* value).
- *    absl::btree_set has no such semantics, which is why abslBtreeSet.h
- *    needs a separate updateForNewVertex/updateForExistingVertex split
- *    (find -> erase -> insert). One call covers both cases here.
- *
- * 2. edge_tree::insert() itself is unsafe: pam_set's single-element
- *    instance `.insert()` reliably crashes (assertion `tot >= B` in
- *    basic_node_helpers.h) on the *second* insert into the same tree —
- *    confirmed with a minimal reproduction outside SAGA-Bench entirely.
- *    `multi_insert(tree, batch)` — CPAM's actual designed bulk-insert
- *    path — does not have this problem, even with a batch of size 1.
- *    So every insert here goes through multi_insert with a single-element
- *    parlay::sequence, which is functionally a single insert but avoids
- *    the buggy code path.
+ * NOTE on weighted graphs: for T=NodeWeight, cpam_edge_entry::comp uses
+ * NodeWeight::operator<, which compares (node, weight) as a pair — two
+ * entries with the same destination node but different weight are NOT
+ * treated as duplicate keys by CPAM's sort_remove_duplicates. So if a
+ * single batch contains two edges to the same neighbor with different
+ * weights, both survive as separate tree entries (inflating degree by
+ * one) rather than the newer weight replacing the older one. This is a
+ * pre-existing property of the same comparator abslBtreeSet<NodeWeight>
+ * uses too, not something batching introduces — but batching increases
+ * the odds of it showing up within a single update() call, so it's worth
+ * knowing about when comparing degree counts against another structure.
  * **/
 template <typename T>
-void cpamSet<T>::updateVertex(const Edge& e, bool source)
+void cpamSet<T>::collectVertex(const Edge& e, bool source,
+                                std::unordered_map<NodeID, std::vector<T>>& out_batches,
+                                std::unordered_map<NodeID, std::vector<T>>& in_batches)
 {
     NodeID index = source ? e.source : e.destination;
 
@@ -107,39 +114,54 @@ void cpamSet<T>::updateVertex(const Edge& e, bool source)
         NodeID dest = source ? e.destination : e.source;
         T neighbor;
         neighbor.setInfo(dest, e.weight);
-        parlay::sequence<T> batch = {neighbor};
-        out_neighbors[index] = edge_tree::multi_insert(out_neighbors[index], batch);
+        out_batches[index].push_back(neighbor);
     }
     else if (!source && directed) {
         T neighbor;
         neighbor.setInfo(e.source, e.weight);
-        parlay::sequence<T> batch = {neighbor};
-        in_neighbors[index] = edge_tree::multi_insert(in_neighbors[index], batch);
+        in_batches[index].push_back(neighbor);
     }
 }
 
 /**
- * Process a batch of edges. Structurally identical to abslBtreeSet<T>::update,
- * including the self-loop handling: for a self-loop the source-side pass
- * already accounts for the node, so the destination-side pass is forced to
- * treat it as "existing" to avoid double counting.
+ * Process a batch of edges. Bookkeeping (vertexExists, self-loop handling)
+ * is unchanged from the per-edge version. The difference: neighbor entries
+ * are staged per-vertex in out_batches/in_batches during the loop, then
+ * flushed with one multi_insert call per touched vertex afterward — so a
+ * vertex that receives, say, 40 new edges within this single update() call
+ * gets ONE multi_insert(tree, batch_of_40) instead of 40 separate
+ * multi_insert(tree, batch_of_1) calls.
  * **/
 template <typename T>
 void cpamSet<T>::update(const EdgeList& el)
 {
+    std::unordered_map<NodeID, std::vector<T>> out_batches;
+    std::unordered_map<NodeID, std::vector<T>> in_batches;
+
     for (auto it = el.begin(); it != el.end(); ++it) {
         Edge e = *it;
         bool isSelfLoop = (e.source == e.destination);
 
         vertexExists(e, true);
-        updateVertex(e, true);
+        collectVertex(e, true, out_batches, in_batches);
 
         if (isSelfLoop) {
             e.destExists = true;
         }
 
         vertexExists(e, false);
-        updateVertex(e, false);
+        collectVertex(e, false, out_batches, in_batches);
+    }
+
+    for (auto& kv : out_batches) {
+        NodeID index = kv.first;
+        parlay::sequence<T> batch(kv.second.begin(), kv.second.end());
+        out_neighbors[index] = edge_tree::multi_insert(out_neighbors[index], batch);
+    }
+    for (auto& kv : in_batches) {
+        NodeID index = kv.first;
+        parlay::sequence<T> batch(kv.second.begin(), kv.second.end());
+        in_neighbors[index] = edge_tree::multi_insert(in_neighbors[index], batch);
     }
 }
 
