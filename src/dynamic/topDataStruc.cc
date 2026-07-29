@@ -1,7 +1,7 @@
 #include "topDataStruc.h"
 
 dataStruc* createDataStruc(const std::string& type, bool weighted, bool directed, int64_t num_nodes, int64_t num_threads)
-{    if (type == "abslBtreeSet") {
+{   if (type == "abslBtreeSet") {
       if (weighted)
 	    return new abslBtreeSet<NodeWeight>(weighted, directed, num_nodes); 
       else
@@ -12,6 +12,12 @@ dataStruc* createDataStruc(const std::string& type, bool weighted, bool directed
 	    return new abslBtreeSetShared<NodeWeight>(weighted, directed,num_nodes); 
       else
 	    return new abslBtreeSetShared<Node>(weighted, directed, num_nodes);
+    }
+    if (type == "cpamSet") {
+     if (weighted)
+     	    return new cpamSet<NodeWeight>(weighted, directed, num_nodes);   
+     else
+	    return new cpamSet<Node>(weighted, directed, num_nodes);
     }       
     else if (type == "adList") {
       if (weighted)

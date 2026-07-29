@@ -687,4 +687,83 @@ neighborhood<T> out_neigh(NodeID n, T* ds)
     return neighborhood<T>(n, ds, false); 
 }
 
+// Specialization for cpamSet<U>
+template <typename U>
+class neighborhood<cpamSet<U>> {
+private:
+    using iter = neighborhood_iter<cpamSet<U>>;
+    NodeID src;
+    cpamSet<U> *ds;
+    bool in;
+public:
+    neighborhood(NodeID src, cpamSet<U> *ds, bool in): src(src), ds(ds), in(in) {}
+
+    iter begin() {
+        return iter(ds, src, in);
+    }
+
+    // Calls the cheap end-tag constructor directly (this class is a
+    // friend of neighborhood_iter<cpamSet<U>>) instead of building a
+    // full iterator via entries() just to overwrite it — unlike the
+    // begin()-then-.end() pattern used elsewhere in this file, that
+    // pattern would cost a second, wasted materialization here.
+    iter end() {
+        return iter(ds, src, in, true);
+    }
+};
+
+template<typename U>
+class neighborhood_iter<cpamSet<U>> {
+    friend class neighborhood<cpamSet<U>>;
+private:
+    using edge_tree = typename cpamSet<U>::edge_tree;
+
+    cpamSet<U>* ds;
+    NodeID node;
+    bool in_neigh;
+    parlay::sequence<U> buffer;
+    size_t idx;
+
+    // Cheap end-sentinel constructor: skips materializing entries(),
+    // just needs buffer.size() to compare equal against.
+    neighborhood_iter(cpamSet<U>* _ds, NodeID _n, bool _in_neigh, bool /*end_tag*/)
+        : ds(_ds), node(_n), in_neigh(_in_neigh), idx(0) {
+        idx = in_neigh ? ds->in_neighbors[node].size()
+                        : ds->out_neighbors[node].size();
+    }
+
+public:
+    neighborhood_iter(cpamSet<U>* _ds, NodeID _n, bool _in_neigh)
+        : ds(_ds), node(_n), in_neigh(_in_neigh), idx(0) {
+        buffer = in_neigh ? edge_tree::entries(ds->in_neighbors[node])
+                           : edge_tree::entries(ds->out_neighbors[node]);
+    }
+
+    bool operator!=(const neighborhood_iter& it) const {
+        return idx != it.idx;
+    }
+
+    neighborhood_iter& operator++() {
+        ++idx;
+        return *this;
+    }
+
+    neighborhood_iter& operator++(int) {
+        ++idx;
+        return *this;
+    }
+
+    NodeID operator*() const {
+        return buffer[idx].getNodeID();
+    }
+
+    Weight extractWeight() const {
+        return buffer[idx].getWeight();
+    }
+
+    neighborhood_iter<cpamSet<U>> end() {
+        return neighborhood_iter<cpamSet<U>>(ds, node, in_neigh, true);
+    }
+};
+
 #endif // TRAVERSAL_H_
