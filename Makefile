@@ -1,6 +1,6 @@
 # Compiler and flags
 CXX = g++
-CXXFLAGS = -O2 -Wall -Wextra -pedantic -std=c++17 -fopenmp
+CXXFLAGS = -O2 -Wall -Wextra -pedantic -std=c++17 -fopenmp -DPARLAY_OPENMP
 
 # Directories
 ABSEIL_DIR := external/abseil-cpp
