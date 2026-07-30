@@ -18,6 +18,20 @@ dataStruc* createDataStruc(const std::string& type, bool weighted, bool directed
      	    return new cpamSet<NodeWeight>(weighted, directed, num_nodes);   
      else
 	    return new cpamSet<Node>(weighted, directed, num_nodes);
+    }
+    if (type == "cpamSetShared") {
+     if (weighted)
+     	    return new cpamSetShared<NodeWeight>(weighted, directed, num_nodes);   
+     else
+        return new cpamSetShared<Node>(weighted, directed, num_nodes);
+    }
+    else if (type == "degAwareRHH") {
+      if (weighted)
+        return new darhh<NodeWeight>(weighted, directed, num_nodes, num_threads); 
+      else
+        return new darhh<Node>(weighted, directed, num_nodes, num_threads);
+    } else if (type == "stinger") {
+        return new stinger(weighted, directed, num_nodes);         
     }       
     else if (type == "adList") {
       if (weighted)

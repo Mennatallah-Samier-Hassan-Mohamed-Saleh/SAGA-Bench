@@ -34,7 +34,7 @@ bool supportedAlg(const std::string& alg)
 
 bool supportedDataStruc(const std::string &type)
 {
-    return (type== "adList" || type == "adListShared" || type == "degAwareRHH" || type == "stinger" || type == "adListChunked" || type == "abslBtreeSet" || type == "abslBtreeSetShared" || type == "cpamSet");
+    return (type== "adList" || type == "adListShared" || type == "degAwareRHH" || type == "stinger" || type == "adListChunked" || type == "abslBtreeSet" || type == "abslBtreeSetShared" || type == "cpamSet"|| type == "cpamSetShared");
 }
 
 void printUsage()
@@ -63,6 +63,7 @@ void printUsage()
 		  << "                6) abslBtreeSet (single-threaded) \n"
 		  << "                7) abslBtreeSetShared (multihtreaded shared style) \n"
 		  << "                8) cpamSet (single-threaded) \n"
+		  << "                9) cpamSetShared (multihtreaded shared style) \n"
 	      << "  ALGORITHM OPTIONS: \n"
 	      << "               	1) traverse\n"
 	      << "               	2) prfromscratch\n"

@@ -35,6 +35,7 @@ private:
 	bool is_abslBtreeSet; // absl btree set style (single thread)
 	bool is_abslBtreeSetShared; // absl btree set style (shared multithreading)
 	bool is_cpamSet; // cpam set style (single thread)
+	bool is_cpamSetShared; // cpam pam_set style (shared multithreading)
 
 public:    
     Algorithm(const std::string& alg_, dataStruc* ds_, const std::string& dtype_, bool verbose_) :
@@ -52,6 +53,7 @@ public:
 		is_abslBtreeSet = (dtype.compare("abslBtreeSet") == 0);
 		is_abslBtreeSetShared = (dtype.compare("abslBtreeSetShared") == 0);
 		is_cpamSet = (dtype.compare("cpamSet") == 0);
+		is_cpamSetShared = (dtype.compare("cpamSetShared") == 0);
 		std::cout << "Algorithm: " << alg << std::endl;
 		std::cout << "Data type: " << dtype << std::endl;
     }
@@ -73,6 +75,8 @@ public:
 		abslBtreeSetShared<Node> *ds12 = dynamic_cast<abslBtreeSetShared<Node>*>(ds);
 		cpamSet<NodeWeight> *ds13 = dynamic_cast<cpamSet<NodeWeight>*>(ds);
 		cpamSet<Node> *ds14 = dynamic_cast<cpamSet<Node>*>(ds);
+		cpamSetShared<NodeWeight> *ds15 = dynamic_cast<cpamSetShared<NodeWeight>*>(ds);
+		cpamSetShared<Node> *ds16 = dynamic_cast<cpamSetShared<Node>*>(ds);
 	
 		if (alg == "traverse") {
 	 	    if (is_adList && ds->weighted)
@@ -104,7 +108,11 @@ public:
 			else if (is_cpamSet && ds->weighted)	
 				return traverseAlg(ds13);
 			else if (is_cpamSet && !ds->weighted) 
-			    return traverseAlg(ds14);	
+			    return traverseAlg(ds14);
+			else if (is_cpamSetShared && ds->weighted)	
+				return traverseAlg(ds15);
+			else if (is_cpamSetShared && !ds->weighted) 
+			    return traverseAlg(ds16);	
 		} else if (alg == "prfromscratch") {
 	    	if (is_adList && ds->weighted)
 				return PRStartFromScratch(ds0, verbose);
@@ -136,6 +144,10 @@ public:
 				return PRStartFromScratch(ds13, verbose);
 			else if (is_cpamSet && !ds->weighted) 
 			    return PRStartFromScratch(ds14, verbose);
+			else if (is_cpamSetShared && ds->weighted)	
+				return PRStartFromScratch(ds15, verbose);
+			else if (is_cpamSetShared && !ds->weighted) 
+			    return PRStartFromScratch(ds16, verbose);
 		} else if (alg == "prdyn") {
 	    	if (is_adList && ds->weighted)
 				return dynPRAlg(ds0, verbose);
@@ -167,6 +179,10 @@ public:
 				return dynPRAlg(ds13, verbose);
 			else if (is_cpamSet && !ds->weighted) 
 			    return dynPRAlg(ds14, verbose);
+			else if (is_cpamSetShared && ds->weighted)
+				return dynPRAlg(ds15, verbose);
+			else if (is_cpamSetShared && !ds->weighted) 
+			    return dynPRAlg(ds16, verbose);
 		} else if (alg == "ccfromscratch") {
 	    	if (is_adList && ds->weighted)
 				return CCStartFromScratch(ds0, verbose);
@@ -198,6 +214,10 @@ public:
 				return CCStartFromScratch(ds13, verbose);
 			else if (is_cpamSet && !ds->weighted) 
 			    return CCStartFromScratch(ds14, verbose);   
+			else if (is_cpamSetShared && ds->weighted)	
+				return CCStartFromScratch(ds15, verbose);
+			else if (is_cpamSetShared && !ds->weighted) 
+			    return CCStartFromScratch(ds16, verbose);
 		} else if (alg == "ccdyn") {
 	    	if (is_adList && ds->weighted)
 				return dynCCAlg(ds0, verbose);
@@ -229,6 +249,10 @@ public:
 				return dynCCAlg(ds13, verbose);
 			else if (is_cpamSet && !ds->weighted) 
 			    return dynCCAlg(ds14, verbose);
+			else if (is_cpamSetShared && ds->weighted)	
+				return dynCCAlg(ds15, verbose);
+			else if (is_cpamSetShared && !ds->weighted) 
+			    return dynCCAlg(ds16, verbose);
 		} else if (alg == "mcfromscratch") {
 	    	if (is_adList && ds->weighted)
 				return MCStartFromScratch(ds0, verbose);
@@ -260,6 +284,10 @@ public:
 				return MCStartFromScratch(ds13, verbose);
 			else if (is_cpamSet && !ds->weighted) 
 			    return MCStartFromScratch(ds14, verbose);
+			else if (is_cpamSetShared && ds->weighted)
+				return MCStartFromScratch(ds15, verbose);
+			else if (is_cpamSetShared && !ds->weighted) 
+			    return MCStartFromScratch(ds16, verbose);
 		} else if (alg == "mcdyn") {
 	    	if (is_adList && ds->weighted)
 				return dynMCAlg(ds0, verbose);
@@ -291,6 +319,10 @@ public:
 				return dynMCAlg(ds13, verbose);
 			else if (is_cpamSet && !ds->weighted) 
 			    return dynMCAlg(ds14, verbose);
+			else if (is_cpamSetShared && ds->weighted)
+				return dynMCAlg(ds15, verbose);
+			else if (is_cpamSetShared && !ds->weighted) 
+			    return dynMCAlg(ds16, verbose);
 		} else if (alg == "bfsfromscratch") {
 	    	if (source == -1) {
 				DynamicSourcePicker sp(ds);
@@ -329,6 +361,10 @@ public:
 				return BFSStartFromScratch(ds13, source, verbose);
 			else if (is_cpamSet && !ds->weighted) 
 			    return BFSStartFromScratch(ds14, source, verbose);
+			else if (is_cpamSetShared && ds->weighted)
+				return BFSStartFromScratch(ds15, source, verbose);
+			else if (is_cpamSetShared && !ds->weighted) 
+			    return BFSStartFromScratch(ds16, source, verbose);
 		} else if (alg == "bfsdyn") {
 	    	if(source == -1){
 				DynamicSourcePicker sp(ds);
@@ -367,6 +403,10 @@ public:
 				return dynBFSAlg(ds13, source, verbose);
 			else if (is_cpamSet && !ds->weighted) 
 			    return dynBFSAlg(ds14, source, verbose);
+			else if (is_cpamSetShared && ds->weighted)
+				return dynBFSAlg(ds15, source, verbose);
+			else if (is_cpamSetShared && !ds->weighted) 
+			    return dynBFSAlg(ds16, source, verbose);
 		} else if (alg == "ssspfromscratch") {
 	    	if (source == -1) {
 				DynamicSourcePicker sp(ds);
@@ -405,6 +445,10 @@ public:
 				return SSSPStartFromScratch(ds13, source, 1, verbose);
 			else if (is_cpamSet && !ds->weighted) 
 			    return SSSPStartFromScratch(ds14, source, 1, verbose);
+			else if (is_cpamSetShared && ds->weighted)
+				return SSSPStartFromScratch(ds15, source, 1, verbose);
+			else if (is_cpamSetShared && !ds->weighted) 
+			    return SSSPStartFromScratch(ds16, source, 1, verbose);
 		} else if (alg == "ssspdyn") {
 		    if (source == -1) {
 				DynamicSourcePicker sp(ds);
@@ -443,6 +487,10 @@ public:
 				return dynSSSPAlg(ds13, source, verbose);
 			else if (is_cpamSet && !ds->weighted) 
 			    return dynSSSPAlg(ds14, source, verbose);
+			else if (is_cpamSetShared && ds->weighted)
+				return dynSSSPAlg(ds15, source, verbose);
+			else if (is_cpamSetShared && !ds->weighted) 
+			    return dynSSSPAlg(ds16, source, verbose);
 		} else if (alg == "sswpfromscratch") {
 	    	if (source == -1) {
 				DynamicSourcePicker sp(ds);
@@ -481,6 +529,10 @@ public:
 				return SSWPStartFromScratch(ds13, source, verbose);
 			else if (is_cpamSet && !ds->weighted) 
 			    return SSWPStartFromScratch(ds14, source, verbose);
+			else if (is_cpamSetShared && ds->weighted)
+				return SSWPStartFromScratch(ds15, source, verbose);
+			else if (is_cpamSetShared && !ds->weighted) 
+			    return SSWPStartFromScratch(ds16, source, verbose);
 		} else if (alg == "sswpdyn") {
 
 	    	if(source == -1) {
@@ -520,6 +572,10 @@ public:
 				return dynSSWPAlg(ds13, source, verbose);
 			else if (is_cpamSet && !ds->weighted) 
 			    return dynSSWPAlg(ds14, source, verbose);
+			else if (is_cpamSetShared && ds->weighted)
+				return dynSSWPAlg(ds15, source, verbose);
+			else if (is_cpamSetShared && !ds->weighted) 
+			    return dynSSWPAlg(ds16, source, verbose);
 		} else {
 	    	std::cout << "Error! Unrecognized Algorithm!" << std::endl;
 	    	exit(0);

@@ -6,6 +6,8 @@
 #include "stinger.h"
 #include "darhh.h"
 #include "adListChunked.h"
+#include "cpamSet.h"
+#include "cpamSetShared.h"
 
 #include "topDataStruc.h"
 
@@ -672,21 +674,6 @@ public:
    }
 };
 
-template<typename T>
-neighborhood<T> in_neigh(NodeID n, T* ds)
-{
-    if(ds->directed)
-	return neighborhood<T>(n, ds, true);         
-    else
-	return neighborhood<T>(n, ds, false); 
-}
-
-template<typename T>
-neighborhood<T> out_neigh(NodeID n, T* ds)
-{
-    return neighborhood<T>(n, ds, false); 
-}
-
 // Specialization for cpamSet<U>
 template <typename U>
 class neighborhood<cpamSet<U>> {
@@ -712,6 +699,23 @@ public:
     }
 };
 
+/**
+ * neighborhood_iter<cpamSet<U>>
+ *
+ * cpam::pam_set has no STL-style begin()/end() (unlike absl::btree_set) —
+ * it only exposes callback/bulk-extraction APIs (iterate_seq, entries()).
+ * So unlike abslBtreeSet's iterator, which wraps the container's own
+ * iterator directly, this one materializes the neighbor set once via
+ * edge_tree::entries() into a parlay::sequence<U> (already key-sorted,
+ * since pam_set is a balanced BST) and walks that by index — the same
+ * "snapshot into a buffer, then iterate the buffer" approach adList uses
+ * over its raw std::vector, just with an owned copy instead of a raw
+ * pointer, since the tree offers no addressable contiguous storage.
+ *
+ * The end-tag constructor below is private but reachable from
+ * neighborhood<cpamSet<U>> (a friend): it just asks the tree for
+ * .size() instead of paying for another entries() call.
+ * **/
 template<typename U>
 class neighborhood_iter<cpamSet<U>> {
     friend class neighborhood<cpamSet<U>>;
@@ -765,5 +769,98 @@ public:
         return neighborhood_iter<cpamSet<U>>(ds, node, in_neigh, true);
     }
 };
+
+// Specialization for cpamSetShared<U>
+// Identical approach to cpamSet<U> above (same underlying edge_tree type,
+// same "materialize via entries() into a buffer" strategy, since pam_set
+// has no STL iterator either way) — this is a straight duplication with
+// the type swapped, not a new design. As with abslBtreeSetShared's own
+// traversal specialization, no locking happens here: traversal runs after
+// the update phase for a batch completes, not concurrently with it.
+template <typename U>
+class neighborhood<cpamSetShared<U>> {
+private:
+    using iter = neighborhood_iter<cpamSetShared<U>>;
+    NodeID src;
+    cpamSetShared<U> *ds;
+    bool in;
+public:
+    neighborhood(NodeID src, cpamSetShared<U> *ds, bool in): src(src), ds(ds), in(in) {}
+
+    iter begin() {
+        return iter(ds, src, in);
+    }
+
+    iter end() {
+        return iter(ds, src, in, true);
+    }
+};
+
+template<typename U>
+class neighborhood_iter<cpamSetShared<U>> {
+    friend class neighborhood<cpamSetShared<U>>;
+private:
+    using edge_tree = typename cpamSetShared<U>::edge_tree;
+
+    cpamSetShared<U>* ds;
+    NodeID node;
+    bool in_neigh;
+    parlay::sequence<U> buffer;
+    size_t idx;
+
+    neighborhood_iter(cpamSetShared<U>* _ds, NodeID _n, bool _in_neigh, bool /*end_tag*/)
+        : ds(_ds), node(_n), in_neigh(_in_neigh), idx(0) {
+        idx = in_neigh ? ds->in_neighbors[node].size()
+                        : ds->out_neighbors[node].size();
+    }
+
+public:
+    neighborhood_iter(cpamSetShared<U>* _ds, NodeID _n, bool _in_neigh)
+        : ds(_ds), node(_n), in_neigh(_in_neigh), idx(0) {
+        buffer = in_neigh ? edge_tree::entries(ds->in_neighbors[node])
+                           : edge_tree::entries(ds->out_neighbors[node]);
+    }
+
+    bool operator!=(const neighborhood_iter& it) const {
+        return idx != it.idx;
+    }
+
+    neighborhood_iter& operator++() {
+        ++idx;
+        return *this;
+    }
+
+    neighborhood_iter& operator++(int) {
+        ++idx;
+        return *this;
+    }
+
+    NodeID operator*() const {
+        return buffer[idx].getNodeID();
+    }
+
+    Weight extractWeight() const {
+        return buffer[idx].getWeight();
+    }
+
+    neighborhood_iter<cpamSetShared<U>> end() {
+        return neighborhood_iter<cpamSetShared<U>>(ds, node, in_neigh, true);
+    }
+};
+
+template<typename T>
+neighborhood<T> in_neigh(NodeID n, T* ds)
+{
+    if(ds->directed)
+	return neighborhood<T>(n, ds, true);         
+    else
+	return neighborhood<T>(n, ds, false); 
+}
+
+template<typename T>
+neighborhood<T> out_neigh(NodeID n, T* ds)
+{
+    return neighborhood<T>(n, ds, false); 
+}
 
 #endif // TRAVERSAL_H_
