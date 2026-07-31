@@ -5,8 +5,8 @@
 #SBATCH --exclusive
 #SBATCH --reservation=Thesis_test_Mennatallah
 #SBATCH -t 7-00:00:00
-#SBATCH --output=pigo_3runs_logbatch_er.out
-#SBATCH --error=pigo_3runs_logbatch_er.err
+#SBATCH --output=pigo_3runs_logbatch_er_cpamSetShared.out
+#SBATCH --error=pigo_3runs_logbatch_er_cpamSetShared.err
 
 # ─────────────────────────────────────────────
 # PIGO sweep — 3 sequential full runs, logarithmic batch-size sweep
@@ -80,9 +80,7 @@ BATCH_SIZES=(1 10 100 1000 10000 100000 1000000)
 # Structures under test — degAwareRHH and adListChunked skipped
 # ─────────────────────────────────────────────
 STRUCTURES=(
-    adListShared
-    abslBtreeSetShared
-    stinger
+    cpamSetShared
 )
 
 # weighted flag: 0=unweighted, 1=weighted
@@ -109,7 +107,6 @@ DATASETS=(
     "soc-LiveJournal1.txt                   1  68993773   4847571"
     "com-orkut.ungraph.txt                  0  117185083  3072441"
     "rmat.txt                               1  500000000  32118308"
-    "co.txt                                 0  234370166  3072627"
     "er.txt                                 0  1000009380 10000000"
 )
 
