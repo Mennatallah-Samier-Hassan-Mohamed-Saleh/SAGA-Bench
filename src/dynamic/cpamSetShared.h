@@ -18,10 +18,6 @@
 
 bool compare_and_swap(bool &x, const bool &old_val, const bool &new_val);
 
-#ifndef CPAM_CSR_TIMING
-#define CPAM_CSR_TIMING 0
-#endif
-
 /**
  * cpamSetShared: adaptive CSR batching with direct CPAM sorted-build/update.
  *
@@ -73,8 +69,18 @@ private:
         T neighbor;
     };
 
-    // Starting point only; benchmark this threshold on the target machine.
-    static constexpr std::size_t LINEAR_CSR_MIN_RECORDS = 65536;
+    /**
+     * Selects between sparse sorted batching and linear CSR batching.
+     *
+     * Updates generating at most 2,000,000 adjacency records use the
+     * sparse path. Larger updates use the linear CSR path.
+     *
+     * The strict comparison in update_direction() keeps the largest tested
+     * undirected dynamic batch (1,000,000 edges = 2,000,000 adjacency
+     * records) on the sparse path, while larger initial graph batches use
+     * the CSR path.
+     */
+    static constexpr std::size_t CSR_BATCH_THRESHOLD = 2'000'000;
 
     static bool neighbor_less(const T& a, const T& b) {
         return a < b;
@@ -118,8 +124,6 @@ template <typename T>
 cpamSetShared<T>::cpamSetShared(bool w, bool d, int64_t _num_nodes_max)
     : dataStruc(w, d, _num_nodes_max)
 {
-    std::cout << "Creating cpamSetShared" << std::endl;
-
     property.resize(num_nodes_max, -1);
     affected.resize(num_nodes_max);
     affected.fill(false);
@@ -164,7 +168,7 @@ void cpamSetShared<T>::update_direction(const EdgeList& el, bool incoming)
     const std::size_t multiplier = (!directed && !incoming) ? 2 : 1;
     const std::size_t estimated_records = el.size() * multiplier;
 
-    if (estimated_records >= LINEAR_CSR_MIN_RECORDS) {
+    if (estimated_records > CSR_BATCH_THRESHOLD) {
         update_direction_linear_csr(el, incoming);
     } else {
         update_direction_sparse(el, incoming);
@@ -182,7 +186,6 @@ template <typename T>
 void cpamSetShared<T>::update_direction_linear_csr(
     const EdgeList& el, bool incoming)
 {
-    const double t0 = omp_get_wtime();
     const std::size_t vertex_count = static_cast<std::size_t>(num_nodes_max);
 
     std::vector<std::size_t> counts(vertex_count, 0);
@@ -205,7 +208,6 @@ void cpamSetShared<T>::update_direction_linear_csr(
             counts[static_cast<std::size_t>(e.destination)] += 1;
         }
     }
-    const double t1 = omp_get_wtime();
 
     std::vector<std::size_t> offsets(vertex_count + 1, 0);
     std::vector<NodeID> touched_vertices;
@@ -219,7 +221,6 @@ void cpamSetShared<T>::update_direction_linear_csr(
     }
 
     const std::size_t record_count = offsets[vertex_count];
-    const double t2 = omp_get_wtime();
     if (record_count == 0) return;
 
     parlay::sequence<T> endpoints(record_count);
@@ -269,7 +270,6 @@ void cpamSetShared<T>::update_direction_linear_csr(
             endpoints[reverse_pos] = std::move(reverse_neighbor);
         }
     }
-    const double t3 = omp_get_wtime();
 
     // Number of sorted, unique CPAM keys retained in each row.
     std::vector<std::size_t> unique_sizes(touched_vertices.size(), 0);
@@ -284,7 +284,6 @@ void cpamSetShared<T>::update_direction_linear_csr(
         T* unique_end = std::unique(first, last, neighbor_equal_key);
         unique_sizes[i] = static_cast<std::size_t>(unique_end - first);
     }
-    const double t4 = omp_get_wtime();
 
     std::vector<edge_tree>& trees = incoming ? in_neighbors : out_neighbors;
     const auto replace = replace_value();
@@ -309,21 +308,7 @@ void cpamSetShared<T>::update_direction_linear_csr(
                 std::move(trees[v]), row, replace);
         }
     }
-    const double t5 = omp_get_wtime();
 
-#if CPAM_CSR_TIMING
-    std::cout
-        << "CPAM_LINEAR_CSR_SORTED direction=" << (incoming ? "in" : "out")
-        << " records=" << record_count
-        << " touched=" << touched_vertices.size()
-        << " count=" << (t1 - t0)
-        << " prefix=" << (t2 - t1)
-        << " scatter=" << (t3 - t2)
-        << " row_sort_unique=" << (t4 - t3)
-        << " flush=" << (t5 - t4)
-        << " total=" << (t5 - t0)
-        << std::endl;
-#endif
 }
 
 /**
@@ -337,7 +322,6 @@ template <typename T>
 void cpamSetShared<T>::update_direction_sparse(
     const EdgeList& el, bool incoming)
 {
-    const double t0 = omp_get_wtime();
     const bool duplicate_for_undirected = !directed && !incoming;
     const int thread_count = omp_get_max_threads();
 
@@ -398,7 +382,6 @@ void cpamSetShared<T>::update_direction_sparse(
     }
 
     std::sort(records.begin(), records.end(), record_less);
-    const double t1 = omp_get_wtime();
 
     struct range {
         NodeID vertex;
@@ -449,46 +432,21 @@ void cpamSetShared<T>::update_direction_sparse(
                 std::move(trees[v]), unique_row, replace);
         }
     }
-    const double t2 = omp_get_wtime();
 
-#if CPAM_CSR_TIMING
-    std::cout
-        << "CPAM_SPARSE_SORTED direction=" << (incoming ? "in" : "out")
-        << " records=" << record_count
-        << " touched=" << ranges.size()
-        << " prepare=" << (t1 - t0)
-        << " flush=" << (t2 - t1)
-        << " total=" << (t2 - t0)
-        << std::endl;
-#endif
 }
 
 template <typename T>
 void cpamSetShared<T>::update(const EdgeList& el)
 {
     if (el.empty()) return;
-
-    const double t0 = omp_get_wtime();
     update_metadata(el);
-    const double t1 = omp_get_wtime();
 
     update_direction(el, false);
-    const double t2 = omp_get_wtime();
 
     if (directed) {
         update_direction(el, true);
     }
-    const double t3 = omp_get_wtime();
 
-#if CPAM_CSR_TIMING
-    std::cout
-        << "CPAM_UPDATE edges=" << el.size()
-        << " metadata=" << (t1 - t0)
-        << " out=" << (t2 - t1)
-        << " in=" << (t3 - t2)
-        << " total=" << (t3 - t0)
-        << std::endl;
-#endif
 }
 
 template <typename T>
@@ -517,4 +475,3 @@ void cpamSetShared<T>::print()
 }
 
 #endif  // CPAMSETSHARED_H_
-
