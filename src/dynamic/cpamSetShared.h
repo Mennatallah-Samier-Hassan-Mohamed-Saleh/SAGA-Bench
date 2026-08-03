@@ -11,30 +11,39 @@
 
 #include "cpam/cpam.h"
 #include "parlay/sequence.h"
+#include "parlay/primitives.h"
 
 #include "abstract_data_struc.h"
 #include "print.h"
 #include "cpamSet.h"
 
 bool compare_and_swap(bool &x, const bool &old_val, const bool &new_val);
-
 /**
- * cpamSetShared: adaptive CSR batching with direct CPAM sorted-build/update.
+ * cpamSetShared: adaptive CSR batching with optimized tiny-batch updates.
  *
  * Large batches:
  *   degree count -> prefix sum -> scatter -> sort/deduplicate each CSR row
  *   -> direct from_sorted() for empty trees
  *   -> multi_insert_sorted() for non-empty trees
  *
- * Small batches:
- *   compact -> sort by (vertex, neighbor) -> deduplicate each vertex range
- *   -> direct sorted CPAM API
+ * Tiny dynamic batches:
+ *   process edges sequentially and update each affected adjacency tree
+ *   directly with a one-element multi_insert_sorted() call. This avoids
+ *   OpenMP setup, record construction, sorting, grouping, and temporary
+ *   batch buffers for batches containing at most 100 edges.
+ *
+ * Other small and medium batches:
+ *   compact -> sort by (vertex, neighbor), using std::sort for small record
+ *   arrays and Parlay parallel sort for record arrays of at least 100,000
+ *   entries -> copy once into one contiguous neighbor buffer -> deduplicate
+ *   each vertex range in place -> zero-allocation per-range views passed to
+ *   the sorted CPAM API
  *
  * Important:
  *   - No unordered_map preprocessing.
  *   - No global sort of all edges for the large-batch path.
  *   - No generic multi_insert() in either path.
- *   - No per-vertex batch copy in the large-batch path.
+ *   - No per-vertex batch allocation or copy in either flush path.
  *   - No per-vertex mutex is needed because each flush iteration owns one tree.
  *   - BYO-aligned sorted update policy: generic replace lambda plus direct
  *     multi_insert_sorted(), while retaining zero-copy CSR row views and
@@ -80,6 +89,8 @@ private:
      * records) on the sparse path, while larger initial graph batches use
      * the CSR path.
      */
+    static constexpr std::size_t TINY_BATCH_THRESHOLD = 100;
+    static constexpr std::size_t PARALLEL_SORT_THRESHOLD = 500'000;
     static constexpr std::size_t CSR_BATCH_THRESHOLD = 2'000'000;
 
     static bool neighbor_less(const T& a, const T& b) {
@@ -105,6 +116,10 @@ private:
     }
 
     void update_metadata(const EdgeList& el);
+    void update_one_edge_metadata(const Edge& e);
+    void update_one_edge_direct(const Edge& e);
+    void update_tiny_batch_direct(const EdgeList& el);
+    void insert_one_sorted(edge_tree& tree, T& neighbor);
     void update_direction(const EdgeList& el, bool incoming);
     void update_direction_linear_csr(const EdgeList& el, bool incoming);
     void update_direction_sparse(const EdgeList& el, bool incoming);
@@ -160,6 +175,112 @@ void cpamSetShared<T>::update_metadata(const EdgeList& el)
 
     num_edges += edge_delta;
     num_nodes += node_delta;
+}
+
+/**
+ * Sequential metadata path for exactly one edge.
+ *
+ * This avoids launching an OpenMP region for a one-edge batch.
+ * It preserves the same metadata semantics as update_metadata().
+ */
+template <typename T>
+void cpamSetShared<T>::update_one_edge_metadata(const Edge& e)
+{
+    if (e.source == e.destination) return;
+
+    bool source_affected = affected[e.source];
+    if (!source_affected) {
+        compare_and_swap(affected[e.source], source_affected, true);
+    }
+
+    bool dest_affected = affected[e.destination];
+    if (!dest_affected) {
+        compare_and_swap(affected[e.destination], dest_affected, true);
+    }
+
+    num_edges += 2;
+    num_nodes += static_cast<int64_t>(!e.sourceExists);
+    num_nodes += static_cast<int64_t>(!e.destExists);
+}
+
+template <typename T>
+void cpamSetShared<T>::insert_one_sorted(edge_tree& tree, T& neighbor)
+{
+    array_view<T> one{&neighbor, 1};
+    const auto replace = replace_value();
+
+    if (tree.is_empty()) {
+        tree = edge_tree::from_sorted(one);
+    } else {
+        tree = edge_tree::multi_insert_sorted(
+            std::move(tree), one, replace);
+    }
+}
+
+/**
+ * Direct path for exactly one input edge.
+ *
+ * This deliberately uses a one-element sorted CPAM update instead of the
+ * member insert() API. The member insert() path previously showed instability
+ * in this integration, while multi_insert_sorted() is already known to be
+ * correct and supports the same weighted replacement policy as larger batches.
+ *
+ * The path is sequential, so there is no race even when an undirected edge
+ * updates both endpoint trees. No mutex or OpenMP region is needed.
+ */
+template <typename T>
+void cpamSetShared<T>::update_one_edge_direct(const Edge& e)
+{
+    if (e.source == e.destination) return;
+
+    if (directed) {
+        T out_neighbor;
+        out_neighbor.setInfo(e.destination, e.weight);
+        insert_one_sorted(
+            out_neighbors[static_cast<std::size_t>(e.source)],
+            out_neighbor);
+
+        T in_neighbor;
+        in_neighbor.setInfo(e.source, e.weight);
+        insert_one_sorted(
+            in_neighbors[static_cast<std::size_t>(e.destination)],
+            in_neighbor);
+    } else {
+        T forward_neighbor;
+        forward_neighbor.setInfo(e.destination, e.weight);
+        insert_one_sorted(
+            out_neighbors[static_cast<std::size_t>(e.source)],
+            forward_neighbor);
+
+        T reverse_neighbor;
+        reverse_neighbor.setInfo(e.source, e.weight);
+        insert_one_sorted(
+            out_neighbors[static_cast<std::size_t>(e.destination)],
+            reverse_neighbor);
+    }
+}
+
+
+/**
+ * Direct path for tiny batches.
+ *
+ * The batch is processed sequentially to avoid OpenMP startup and to ensure
+ * that two edges targeting the same vertex tree cannot race.
+ *
+ * Each non-self-loop edge receives the same metadata handling and direct
+ * one-element sorted CPAM updates used by the single-edge path.
+ */
+template <typename T>
+void cpamSetShared<T>::update_tiny_batch_direct(const EdgeList& el)
+{
+    for (std::size_t k = 0; k < el.size(); ++k) {
+        const Edge& e = el[k];
+
+        if (e.source == e.destination) continue;
+
+        update_one_edge_metadata(e);
+        update_one_edge_direct(e);
+    }
 }
 
 template <typename T>
@@ -334,19 +455,25 @@ void cpamSetShared<T>::update_direction_sparse(
 
         #pragma omp for schedule(static)
         for (std::size_t k = 0; k < el.size(); ++k) {
-            if (el[k].source != el[k].destination) ++local;
+            if (el[k].source != el[k].destination) {
+                ++local;
+            }
         }
+
         thread_counts[tid] = local;
     }
 
     std::vector<std::size_t> thread_offsets(thread_count + 1, 0);
+
     for (int t = 0; t < thread_count; ++t) {
-        thread_offsets[t + 1] = thread_offsets[t] + thread_counts[t];
+        thread_offsets[t + 1] =
+            thread_offsets[t] + thread_counts[t];
     }
 
     const std::size_t valid_edges = thread_offsets[thread_count];
     const std::size_t record_count =
         duplicate_for_undirected ? 2 * valid_edges : valid_edges;
+
     if (record_count == 0) return;
 
     std::vector<batch_record> records(record_count);
@@ -359,29 +486,50 @@ void cpamSetShared<T>::update_direction_sparse(
         #pragma omp for schedule(static)
         for (std::size_t k = 0; k < el.size(); ++k) {
             const Edge& e = el[k];
+
             if (e.source == e.destination) continue;
 
             if (incoming) {
                 T neighbor;
                 neighbor.setInfo(e.source, e.weight);
-                records[pos++] = batch_record{e.destination, std::move(neighbor)};
+
+                records[pos++] = batch_record{
+                    e.destination,
+                    std::move(neighbor)
+                };
             } else {
                 T neighbor;
                 neighbor.setInfo(e.destination, e.weight);
-                records[pos] = batch_record{e.source, std::move(neighbor)};
+
+                records[pos] = batch_record{
+                    e.source,
+                    std::move(neighbor)
+                };
 
                 if (duplicate_for_undirected) {
                     T reverse_neighbor;
                     reverse_neighbor.setInfo(e.source, e.weight);
+
                     records[valid_edges + pos] = batch_record{
-                        e.destination, std::move(reverse_neighbor)};
+                        e.destination,
+                        std::move(reverse_neighbor)
+                    };
                 }
+
                 ++pos;
             }
         }
     }
 
-    std::sort(records.begin(), records.end(), record_less);
+    if (record_count >= PARALLEL_SORT_THRESHOLD) {
+        parlay::sort_inplace(records, record_less);
+    } else {
+        std::sort(
+            records.begin(),
+            records.end(),
+            record_less
+        );
+    }
 
     struct range {
         NodeID vertex;
@@ -393,60 +541,95 @@ void cpamSetShared<T>::update_direction_sparse(
     ranges.reserve(record_count);
 
     std::size_t begin = 0;
+
     while (begin < record_count) {
         std::size_t end = begin + 1;
+
         while (end < record_count &&
                records[end].vertex == records[begin].vertex) {
             ++end;
         }
-        ranges.push_back(range{records[begin].vertex, begin, end});
+
+        ranges.push_back(range{
+            records[begin].vertex,
+            begin,
+            end
+        });
+
         begin = end;
     }
 
-    std::vector<edge_tree>& trees = incoming ? in_neighbors : out_neighbors;
-    const auto replace = replace_value();
+    parlay::sequence<T> neighbors(record_count);
 
-    #pragma omp parallel for schedule(dynamic, 1)
+    #pragma omp parallel for schedule(static)
+    for (std::size_t i = 0; i < record_count; ++i) {
+        neighbors[i] = std::move(records[i].neighbor);
+    }
+
+    std::vector<std::size_t> unique_sizes(ranges.size(), 0);
+
+    #pragma omp parallel for schedule(dynamic, 256)
     for (std::size_t i = 0; i < ranges.size(); ++i) {
         const range& r = ranges[i];
 
-        // Small path: one compact sequence is acceptable, but do not invoke
-        // generic multi_insert(), which would sort and allocate again.
-        parlay::sequence<T> row(r.end - r.begin);
-        for (std::size_t j = r.begin; j < r.end; ++j) {
-            row[j - r.begin] = std::move(records[j].neighbor);
-        }
+        T* first = neighbors.data() + r.begin;
+        T* last = neighbors.data() + r.end;
 
-        auto unique_end = std::unique(row.begin(), row.end(), neighbor_equal_key);
-        const std::size_t unique_count =
-            static_cast<std::size_t>(unique_end - row.begin());
-        if (unique_count == 0) continue;
+        T* unique_end =
+            std::unique(first, last, neighbor_equal_key);
 
-        array_view<T> unique_row{row.data(), unique_count};
-        const std::size_t v = static_cast<std::size_t>(r.vertex);
-
-        if (trees[v].is_empty()) {
-            trees[v] = edge_tree::from_sorted(unique_row);
-        } else {
-            trees[v] = edge_tree::multi_insert_sorted(
-                std::move(trees[v]), unique_row, replace);
-        }
+        unique_sizes[i] =
+            static_cast<std::size_t>(unique_end - first);
     }
 
+    std::vector<edge_tree>& trees =
+        incoming ? in_neighbors : out_neighbors;
+
+    const auto replace = replace_value();
+
+    #pragma omp parallel for schedule(dynamic, 256)
+    for (std::size_t i = 0; i < ranges.size(); ++i) {
+        const std::size_t unique_count = unique_sizes[i];
+
+        if (unique_count == 0) continue;
+
+        const range& r = ranges[i];
+        const std::size_t v =
+            static_cast<std::size_t>(r.vertex);
+
+        array_view<T> row{
+            neighbors.data() + r.begin,
+            unique_count
+        };
+
+        if (trees[v].is_empty()) {
+            trees[v] = edge_tree::from_sorted(row);
+        } else {
+            trees[v] = edge_tree::multi_insert_sorted(
+                std::move(trees[v]),
+                row,
+                replace
+            );
+        }
+    }
 }
 
 template <typename T>
 void cpamSetShared<T>::update(const EdgeList& el)
 {
     if (el.empty()) return;
-    update_metadata(el);
 
+    if (el.size() <= TINY_BATCH_THRESHOLD) {
+        update_tiny_batch_direct(el);
+        return;
+    }
+
+    update_metadata(el);
     update_direction(el, false);
 
     if (directed) {
         update_direction(el, true);
     }
-
 }
 
 template <typename T>
