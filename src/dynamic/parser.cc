@@ -93,7 +93,7 @@ cmd_args parse(int argc, char *argv[])
 	    break;
 	case 'b':
 	    args.flags |= 4;
-	    args.batch_size = atoi(optarg);
+	    args.batch_size = std::stoll(optarg);
 	    break;
 	case 'w':
 	    args.flags |= 2;     
@@ -142,7 +142,7 @@ cmd_args parse(int argc, char *argv[])
 	    }
 	    break;
 	case 'i':
-	    args.initial_batch_size = atoi(optarg);	    
+	    args.initial_batch_size = std::stoll(optarg);	    
 	    break;
 	case 'l':
 	    args.min_weight = atol(optarg);
@@ -200,6 +200,15 @@ cmd_args parse(int argc, char *argv[])
 	exit(-1);
     }
 	*/
+	if (args.batch_size <= 0) {
+        std::cerr << "ERROR: batch size must be positive" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    if (args.initial_batch_size < 0) {
+        std::cerr << "ERROR: initial batch size cannot be negative" << std::endl;
+        exit(EXIT_FAILURE);
+    }
 
     std::array<std::string, 4> reqs = {
 	"ssspdyn", "ssspfromscratch", "sswpdyn", "sswpfromscratch"};
