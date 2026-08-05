@@ -87,23 +87,16 @@ int main(int argc, char* argv[])
             size_t end = std::min(offset + (size_t)current_batch_size, total);
 
             // Slice batch from allEdges
-            EdgeList el(allEdges.begin() + offset, allEdges.begin() + end);
+            //EdgeList el(allEdges.begin() + offset, allEdges.begin() + end);
+            const std::size_t batch_length = end - offset;
 
-            // Debug: check edge IDs in this batch
-            /*
-            NodeID maxSrc = 0, maxDst = 0;
-            for (const auto& e : el) {
-                maxSrc = std::max(maxSrc, e.source);
-                maxDst = std::max(maxDst, e.destination);
+            EdgeList el(batch_length);
+
+            #pragma omp parallel for schedule(static)
+            for (std::size_t i = 0; i < batch_length; ++i) {
+                el[i] = allEdges[offset + i];
             }
-            cout << "Batch " << batch_id 
-                << " size=" << el.size()
-                << " maxSrc=" << maxSrc 
-                << " maxDst=" << maxDst 
-                << " struc->num_nodes=" << struc->num_nodes 
-                << endl;
-            */
-           
+
             // Update data structure
             t.Start();
             struc->update(el);
