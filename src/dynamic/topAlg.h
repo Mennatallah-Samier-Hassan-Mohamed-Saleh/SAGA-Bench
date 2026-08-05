@@ -38,11 +38,15 @@ private:
 	bool is_cpamSetShared; // cpam pam_set style (shared multithreading)
 
 public:    
-    Algorithm(const std::string& alg_, dataStruc* ds_, const std::string& dtype_, bool verbose_) :
-	alg(alg_),    
+    Algorithm(const std::string& alg_,
+              dataStruc* ds_,
+              const std::string& dtype_,
+              bool verbose_,
+              NodeID source_) :
+	alg(alg_),
 	dtype(dtype_),
-	ds(ds_),     
-	source(-1),
+	ds(ds_),
+	source(source_),
 	batch(-1),
 	verbose(verbose_) { 
 		is_adListST = (dtype.compare("adList") == 0);           
@@ -56,6 +60,9 @@ public:
 		is_cpamSetShared = (dtype.compare("cpamSetShared") == 0);
 		std::cout << "Algorithm: " << alg << std::endl;
 		std::cout << "Data type: " << dtype << std::endl;
+		if (source != static_cast<NodeID>(-1)) {
+			std::cout << "Configured source: " << source << std::endl;
+		}
     }
     
     void performAlg() {

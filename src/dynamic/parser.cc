@@ -40,7 +40,7 @@ bool supportedDataStruc(const std::string &type)
 void printUsage()
 {
     std::cout << "Arguments:  -f filename -b batchSize -w weighted"
-	" -d directed -s dataStructure -n numNodes -a algorithm -t number of threads -i initial batchSize -l weight_min -u weight_max\n"
+	" -d directed -s dataStructure -n numNodes -a algorithm -t number of threads -i initial batchSize -l weight_min -u weight_max -r source -v verbose\n"
 	      << "First four arguments are required\n"
 	      << "-f filename       	\n"
 	      << "-b batchSize      	suggestion = 100K\n"
@@ -53,6 +53,7 @@ void printUsage()
 		  << "-i initial batchSize    initial batch size (optional for scalability tests)\n"
 		  << "-l weight_min       	min weight for random weight generation (default: 2)\n"
 	      << "-u weight_max       	max weight for random weight generation (default: 2)\n"
+	      << "-r source       	    source node to run bfs, sssp and sswp\n"
 		  << "-v verbose            print algorithms' output 0=don't print, 1=print\n"
 	      << "  DATA STRUCTURE OPTIONS:\n"
 		  << "               	1) adList (single-threaded) \n"		  
@@ -85,7 +86,7 @@ cmd_args parse(int argc, char *argv[])
 {
     cmd_args args;
     int opt = 0;
-    while(-1 != (opt = getopt(argc, argv, "f:b:w:d:s:n:a:t:i:l:u:v:h"))) {
+    while(-1 != (opt = getopt(argc, argv, "f:b:w:d:s:n:a:t:i:l:u:v:r:h"))) {
         switch(opt) {
 	case 'f':               
 	    args.flags |= 8;
@@ -150,6 +151,9 @@ cmd_args parse(int argc, char *argv[])
 	case 'u':
 	    args.max_weight = atol(optarg);
 	    break;
+	case 'r':
+        args.source = std::stoll(optarg);
+        break;
 	case 'v':
 	if (atoi(optarg) == 1) {
 	    args.verbose = true;
@@ -217,5 +221,12 @@ cmd_args parse(int argc, char *argv[])
         std::cout << "ERROR! " << args.algorithm << " requires weighted graph " << std::endl;
         exit(-1);
     }
+    
+if (args.source < -1) {
+    std::cerr
+        << "ERROR: source must be -1 or a non-negative vertex ID"
+        << std::endl;
+    exit(EXIT_FAILURE);
+}
     return args;
 }

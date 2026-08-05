@@ -189,7 +189,7 @@ int main(int argc, char* argv[])
         opts.num_threads
     );
 
-    Algorithm alg(opts.algorithm, struc, opts.type, opts.verbose);
+    Algorithm alg(opts.algorithm, struc, opts.type, opts.verbose,static_cast<NodeID>(opts.source));
 
     /* Step 6: Slice into batches, update, and run algorithm inline. */
     const int64_t start_batch_size =
