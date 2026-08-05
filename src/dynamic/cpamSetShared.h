@@ -587,7 +587,15 @@ void cpamSetShared<T>::update_direction_sparse(
 
     const auto replace = replace_value();
 
-    #pragma omp parallel for schedule(dynamic, 256)
+    /*
+     * Sparse ranges often contain only one record, but the corresponding
+     * existing CPAM trees can differ greatly in size. A chunk size of 256
+     * can therefore cause load imbalance on skewed graphs such as Orkut.
+     *
+     * Dynamic scheduling with one range per task distributes expensive
+     * persistent-tree updates more evenly across worker threads.
+     */
+    #pragma omp parallel for schedule(dynamic, 1)
     for (std::size_t i = 0; i < ranges.size(); ++i) {
         const std::size_t unique_count = unique_sizes[i];
 
