@@ -1,185 +1,263 @@
 #include <unistd.h>
+
+#include <algorithm>
+#include <cstddef>
+#include <cstdint>
 #include <fstream>
-#include <cstring>
-#include <mutex>
-#include <thread>
+#include <iostream>
+#include <random>
+#include <vector>
+
+#include <omp.h>
 
 #include "topDataStruc.h"
 #include "parser.h"
 #include "pigo.hpp"
 #include "../common/timer.h"
-#include <random>
 #include "topAlg.h"
 
 using namespace pigo;
-/* Main thread that launches everything else */
 
 int main(int argc, char* argv[])
-{    
+{
     cmd_args opts = parse(argc, argv);
+    Timer t;
 
-  /*Step 1: Graph reading */
-   Timer t;
-   t.Start();
-   Graph g{opts.filename};
-   t.Stop();
-   cout << "Time to load graph: " << t.Seconds() << " seconds" << endl;
-   cout << "number of vertices: " << g.n() << endl;
-   cout << "number of edges: " << g.m() << endl;
+    /* Step 1: Graph reading. */
+    t.Start();
+    Graph g{opts.filename};
+    t.Stop();
 
-    /*Step 2: Change CSR to Edge List*/
-    cout << "Converting to edgelist format..." << endl;
+    std::cout << "Time to load graph: " << t.Seconds() << " seconds" << std::endl;
+    std::cout << "number of vertices: " << g.n() << std::endl;
+    std::cout << "number of edges: " << g.m() << std::endl;
+
+    /* Step 2: Convert PIGO CSR to EdgeList. */
+    std::cout << "Converting to edgelist format..." << std::endl;
+
+    const std::size_t vertex_count = static_cast<std::size_t>(g.n());
+    const std::size_t edge_count = static_cast<std::size_t>(g.m());
+    const bool weighted = opts.weighted;
+
+    std::mt19937 rng(kRandSeed);
+    std::uniform_int_distribution<Weight> uweight(
+        opts.min_weight,
+        opts.max_weight
+    );
+
     EdgeList allEdges;
-    allEdges.reserve(g.m());
-
-    bool weighted = opts.weighted;
-    // Using a fixed seed for reproducibility of random weights and shuffling
-    mt19937 rng(kRandSeed);
-    // If weighted, set up a uniform distribution for weights in the specified range
-    std::uniform_int_distribution<Weight> uweight(opts.min_weight, opts.max_weight);  
     t.Start();
-    for (uint32_t u = 0; u < g.n(); u++) {
-        for (auto v : g.neighbors(u)) {
-            Edge e;
-            e.source      = u;
-            e.destination = v;
-            // If the graph is weighted, assign a random integer weight; otherwise, use 1
-            e.weight      = weighted ? uweight(rng) : 1;  
-            allEdges.push_back(e);
+
+    if (!weighted) {
+        std::vector<std::size_t> degrees(vertex_count, 0);
+
+        #pragma omp parallel for schedule(static)
+        for (std::size_t u = 0; u < vertex_count; ++u) {
+            std::size_t degree = 0;
+            for (auto v : g.neighbors(static_cast<uint32_t>(u))) {
+                (void)v;
+                ++degree;
+            }
+            degrees[u] = degree;
         }
-    }
-    t.Stop();
 
-    cout << "Time to convert to edgelist: " << t.Seconds() << " seconds" << endl;
-    cout << "Results in: " << allEdges.size() << " edges" << endl;
+        std::vector<std::size_t> offsets(vertex_count + 1, 0);
+        const int maximum_threads = omp_get_max_threads();
+        std::vector<std::size_t> block_sums(
+            static_cast<std::size_t>(maximum_threads),
+            0
+        );
 
-    /*Step 3: Shuffle the edge list in memory. */
-    cout << "Shuffling edges..." << endl;
-    t.Start();
-    //mt19937 rng(kRandSeed);
-    shuffle(allEdges.begin(), allEdges.end(), rng);
-    t.Stop();
-    cout << "Time to shuffle edges: " << t.Seconds() << " seconds" << endl;
-    cout << "Shuffle complete" << endl;
- 
-    /*Solution 1: Re-assign exists flags after shuffle */
-    vector<bool> nodeSeen(g.n(), false); 
-    for (auto& e : allEdges) {
-        e.sourceExists = nodeSeen[e.source];
-        e.destExists   = nodeSeen[e.destination];
-        nodeSeen[e.source] = true;
-        nodeSeen[e.destination] = true;
-    }
-
-    /*Step 4: Create data structure and algorithm */
-    dataStruc* struc = createDataStruc(opts.type, opts.weighted, opts.directed, g.n(), opts.num_threads);   
-    Algorithm alg(opts.algorithm, struc, opts.type, opts.verbose);
-
-    /*Step 5: Slice into batches, update, and run algorithm inline */
-    int64_t start_batch_size = (opts.initial_batch_size != 0) ? opts.initial_batch_size : opts.batch_size;
-    int batch_id = 0;
-    size_t offset = 0;
-    size_t total = allEdges.size();
-    
-    while (offset < total)
+        #pragma omp parallel
         {
-            int64_t current_batch_size = (batch_id == 0) ? start_batch_size : opts.batch_size;
-            size_t end = std::min(offset + (size_t)current_batch_size, total);
+            const int thread_id = omp_get_thread_num();
+            const int team_size = omp_get_num_threads();
 
-            // Slice batch from allEdges
-            //EdgeList el(allEdges.begin() + offset, allEdges.begin() + end);
-            const std::size_t batch_length = end - offset;
+            const std::size_t block_begin =
+                (vertex_count * static_cast<std::size_t>(thread_id)) /
+                static_cast<std::size_t>(team_size);
 
-            EdgeList el(batch_length);
+            const std::size_t block_end =
+                (vertex_count * static_cast<std::size_t>(thread_id + 1)) /
+                static_cast<std::size_t>(team_size);
 
-            #pragma omp parallel for schedule(static)
-            for (std::size_t i = 0; i < batch_length; ++i) {
-                el[i] = allEdges[offset + i];
+            std::size_t local_sum = 0;
+
+            for (std::size_t u = block_begin; u < block_end; ++u) {
+                local_sum += degrees[u];
+                offsets[u + 1] = local_sum;
             }
 
-            // Update data structure
-            t.Start();
-            struc->update(el);
-            t.Stop();
+            block_sums[static_cast<std::size_t>(thread_id)] = local_sum;
 
-            ofstream out("Update.csv", std::ios_base::app);
-            out << t.Seconds() << endl;
-            out.close();
+            #pragma omp barrier
 
-            cout << "Updated batch: " << batch_id << endl;
+            #pragma omp single
+            {
+                std::size_t prefix = 0;
+                for (int block = 0; block < team_size; ++block) {
+                    const std::size_t block_total =
+                        block_sums[static_cast<std::size_t>(block)];
+                    block_sums[static_cast<std::size_t>(block)] = prefix;
+                    prefix += block_total;
+                }
+            }
 
-            // Run algorithm on updated graph
-            alg.performAlg();
+            const std::size_t block_offset =
+                block_sums[static_cast<std::size_t>(thread_id)];
 
-            offset = end;
-            batch_id++;
-    }
-
-    cout << "Total batches processed: " << batch_id << endl;
-    struc->print();
-}
-    /*
-    ifstream file(opts.filename);
-    if (!file.is_open()) {
-        cout << "Couldn't open file " << opts.filename << endl;
-	exit(-1);
-    }    
-
-    std::mutex q_lock;
-    
-    EdgeBatchQueue queue;
-    bool loop = true;  
-    dataStruc* struc = createDataStruc(opts.type, opts.weighted, opts.directed, opts.num_nodes, opts.num_threads);    
-    std::thread t1(dequeAndInsertEdge, opts.type, struc, &queue, &q_lock, opts.algorithm, &loop);   
-    
-    cpu_set_t cpuset;
-    CPU_ZERO(&cpuset);
-    CPU_SET(1, &cpuset);
-
-    int rc = pthread_setaffinity_np(t1.native_handle(), sizeof(cpu_set_t), &cpuset);
-    
-    if (rc != 0) {
-        std::cerr << "Error calling pthread_setaffinity_np: " << rc << "\n";
-    }
-
-    int batch_id = 0;
-    NodeID lastAssignedNodeID = -1;
-    MapTable VMAP;
-    // Initial batch can be different than the rest of the batches for scalability experiments
-    int64_t start_batch_size = (opts.initial_batch_size!= 0) ? opts.initial_batch_size : opts.batch_size;
-    while (!file.eof()) {        
-        EdgeList el = readBatchFromCSV(
-	    file,
-	    start_batch_size,
-	    batch_id,
-	    opts.weighted,
-	    VMAP,
-	    lastAssignedNodeID);
-        if (el.empty()) {
-            break;
+            for (std::size_t u = block_begin; u < block_end; ++u) {
+                offsets[u + 1] += block_offset;
+            }
         }
-	q_lock.lock();     
-        queue.push(el);
-	q_lock.unlock();
-	batch_id++;  
-    start_batch_size = opts.batch_size;        
-    }
-    file.close();
 
-    bool allEmpty = false;
-    while (!allEmpty) {   
-        q_lock.lock();
-	allEmpty = queue.empty();
-	q_lock.unlock();
-	sleep(20);
+        if (offsets[vertex_count] != edge_count) {
+            std::cerr << "ERROR: Parallel conversion counted "
+                      << offsets[vertex_count]
+                      << " edges, but PIGO reported "
+                      << edge_count
+                      << " edges."
+                      << std::endl;
+            return 1;
+        }
+
+        allEdges.resize(edge_count);
+
+        #pragma omp parallel for schedule(static)
+        for (std::size_t u = 0; u < vertex_count; ++u) {
+            std::size_t position = offsets[u];
+
+            for (auto v : g.neighbors(static_cast<uint32_t>(u))) {
+                Edge edge;
+                edge.source = static_cast<NodeID>(u);
+                edge.destination = static_cast<NodeID>(v);
+                edge.weight = 1;
+                allEdges[position++] = edge;
+            }
+        }
+    } else {
+        /* Keep weighted conversion serial for deterministic weight assignment. */
+        allEdges.reserve(edge_count);
+
+        for (uint32_t u = 0; u < g.n(); ++u) {
+            for (auto v : g.neighbors(u)) {
+                Edge edge;
+                edge.source = u;
+                edge.destination = v;
+                edge.weight = uweight(rng);
+                allEdges.push_back(edge);
+            }
+        }
     }
-    
-    loop = false;
-    t1.join();
-    
-    //cout << "Started printing queues " << endl;
-    //printEdgeBatchQueue(queue);
-    //cout << "Done printing queues " << endl;    
+
+    t.Stop();
+
+    std::cout << "Time to convert to edgelist: "
+              << t.Seconds()
+              << " seconds"
+              << std::endl;
+
+    std::cout << "Results in: "
+              << allEdges.size()
+              << " edges"
+              << std::endl;
+
+    /* Step 3: Keep the original serial shuffle for comparability. */
+    std::cout << "Shuffling edges..." << std::endl;
+    t.Start();
+    std::shuffle(allEdges.begin(), allEdges.end(), rng);
+    t.Stop();
+    std::cout << "Time to shuffle edges: " << t.Seconds() << " seconds" << std::endl;
+    std::cout << "Shuffle complete" << std::endl;
+
+    /* Step 4: Reassign existence flags after shuffling. */
+    std::vector<bool> nodeSeen(vertex_count, false);
+
+    for (Edge& edge : allEdges) {
+        edge.sourceExists = nodeSeen[static_cast<std::size_t>(edge.source)];
+        edge.destExists = nodeSeen[static_cast<std::size_t>(edge.destination)];
+        nodeSeen[static_cast<std::size_t>(edge.source)] = true;
+        nodeSeen[static_cast<std::size_t>(edge.destination)] = true;
+    }
+
+    /* Step 5: Create data structure and algorithm. */
+    dataStruc* struc = createDataStruc(
+        opts.type,
+        opts.weighted,
+        opts.directed,
+        static_cast<int64_t>(g.n()),
+        opts.num_threads
+    );
+
+    Algorithm alg(opts.algorithm, struc, opts.type, opts.verbose);
+
+    /* Step 6: Slice into batches, update, and run algorithm inline. */
+    const int64_t start_batch_size =
+        (opts.initial_batch_size != 0)
+            ? opts.initial_batch_size
+            : opts.batch_size;
+
+    if (start_batch_size <= 0 || opts.batch_size <= 0) {
+        std::cerr << "ERROR: Batch sizes must be positive." << std::endl;
+        return 1;
+    }
+
+    const std::size_t total = allEdges.size();
+    const std::size_t initial_batch_size =
+        static_cast<std::size_t>(start_batch_size);
+    const std::size_t dynamic_batch_size =
+        static_cast<std::size_t>(opts.batch_size);
+
+    if (initial_batch_size > total) {
+        std::cerr << "ERROR: Initial batch size exceeds total edge count."
+                  << std::endl;
+        return 1;
+    }
+
+    std::size_t offset = 0;
+    std::size_t batch_id = 0;
+
+    while (offset < total) {
+        const std::size_t requested_batch_size =
+            (batch_id == 0)
+                ? initial_batch_size
+                : dynamic_batch_size;
+
+        const std::size_t remaining = total - offset;
+        const std::size_t batch_length =
+            std::min(requested_batch_size, remaining);
+        const std::size_t end = offset + batch_length;
+
+        /* Keep the successful parallel EdgeList materialization. */
+        EdgeList el(batch_length);
+
+        #pragma omp parallel for schedule(static)
+        for (std::size_t i = 0; i < batch_length; ++i) {
+            el[i] = allEdges[offset + i];
+        }
+
+        t.Start();
+        struc->update(el);
+        t.Stop();
+
+        {
+            std::ofstream out("Update.csv", std::ios_base::app);
+            if (!out) {
+                std::cerr << "ERROR: Could not open Update.csv." << std::endl;
+                return 1;
+            }
+            out << t.Seconds() << std::endl;
+        }
+
+        std::cout << "Updated batch: " << batch_id << std::endl;
+        alg.performAlg();
+
+        offset = end;
+        ++batch_id;
+    }
+
+    std::cout << "Total batches processed: " << batch_id << std::endl;
     struc->print();
+
+    return 0;
 }
-*/
