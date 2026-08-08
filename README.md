@@ -8,7 +8,10 @@ EPIC-Bench extends [SAGA-Bench](https://github.com/abasak24/SAGA-Bench) to suppo
 - **Batch size:** configurable dynamic-update sizes
 - **Graph data structure:** serial-update, concurrent-update, and batch-parallel data structures
 
-EPIC-Bench adds parallel graph ingestion using PIGO, in-memory preprocessing and batch generation, configurable base-graph construction, and support for batch-parallel data structures such as CPAM.
+EPIC-Bench adds parallel graph ingestion using
+[PIGO](https://github.com/GT-TDAlab/PIGO), in-memory preprocessing and
+batch generation, configurable base-graph construction, and support for
+batch-parallel data structures such as CPAM.
 
 The implementation used for the EPIC-Bench experiments is maintained on the:
 
@@ -49,8 +52,8 @@ The paper experiments use:
 - GCC 9.2.0
 - C++17
 - OpenMP
-- ParlayLib
 - PIGO
+- ParlayLib
 - 128 CPU cores on a single compute node
 
 The repository uses Git submodules. Make sure to run:
@@ -60,6 +63,22 @@ git submodule update --init --recursive
 ```
 
 before building.
+
+
+### Key Dependencies
+
+EPIC-Bench builds on several external libraries and systems:
+
+- [PIGO](https://github.com/GT-TDAlab/PIGO) for high-throughput parallel graph input.
+- [ParlayLib](https://github.com/cmuparlay/parlaylib) for shared-memory parallel primitives.
+- [Abseil](https://abseil.io/) for the Abseil B-tree implementation.
+- CPAM / PaC-tree for the batch-parallel data structure evaluated in the paper.
+
+Dependencies included as Git submodules are obtained using:
+
+```bash
+git submodule update --init --recursive
+```
 
 
 ## Repository Structure
@@ -470,13 +489,46 @@ The paper experiments use:
 ```
 
 
+## Third-Party Software and References
+
+EPIC-Bench builds on several open-source projects. Please cite the corresponding work when appropriate.
+
+### PIGO
+
+EPIC-Bench uses [PIGO](https://github.com/GT-TDAlab/PIGO) for parallel graph input.
+
+> K. Gabert and Ü. V. Çatalyürek,  
+> **“PIGO: A Parallel Graph Input/Output Library,”**  
+> 2021 IEEE International Parallel and Distributed Processing Symposium Workshops (IPDPSW), pp. 276–279, 2021.
+
+### ParlayLib
+
+EPIC-Bench uses [ParlayLib](https://github.com/cmuparlay/parlaylib) for shared-memory parallel primitives.
+
+> G. E. Blelloch, D. Anderson, and L. Dhulipala,  
+> **“Brief Announcement: ParlayLib — A Toolkit for Parallel Algorithms on Shared-Memory Multicore Machines,”**  
+> Proceedings of the 32nd ACM Symposium on Parallelism in Algorithms and Architectures (SPAA), pp. 507–509, 2020.
+
+### Abseil
+
+EPIC-Bench uses the [Abseil C++ library](https://abseil.io/) for the Abseil B-tree implementation.
+
+### CPAM / PaC-trees
+
+EPIC-Bench integrates CPAM as its batch-parallel data structure. CPAM builds on the PaC-tree design.
+
+> L. Dhulipala, G. E. Blelloch, Y. Gu, and Y. Sun,  
+> **“PaC-trees: Supporting Parallel and Compressed Purely-Functional Collections,”**  
+> Proceedings of the 43rd ACM SIGPLAN International Conference on Programming Language Design and Implementation (PLDI), pp. 108–121, 2022.
+
+
 ## Original SAGA-Bench
 
 EPIC-Bench builds on the original SAGA-Bench benchmark:
 
 > A. Basak, J. Lin, R. Lorica, X. Xie, Z. Chishti, A. Alameldeen, and Y. Xie,  
 > **“SAGA-Bench: Software and Hardware Characterization of Streaming Graph Analytics Workloads,”**  
-> IEEE ISPASS, 2020.
+> IEEE International Symposium on Performance Analysis of Systems and Software (ISPASS), pp. 12–23, 2020.
 
 Original repository:
 
@@ -493,7 +545,7 @@ If you use EPIC-Bench, please cite the EPIC-Bench paper.
 
 <!-- Add the final EPIC-Bench BibTeX entry here once publication metadata is available. -->
 
-The original SAGA-Bench work should also be cited when appropriate.
+Please also cite the relevant third-party systems used by your experiment, including SAGA-Bench, PIGO, and CPAM/PaC-trees, where appropriate.
 
 
 ## Issues and Contributions
