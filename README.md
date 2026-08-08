@@ -1,142 +1,505 @@
-<p align="center"><img src="https://github.com/abasak24/SAGA-Bench/blob/master/img/saga.png" width="350"></p>
+# EPIC-Bench
 
-#
+**Scalable Benchmarking of Modern Data Structures for Dynamic-Graph Analytics**
 
-This repository contains code, scripts, and user instructions related to the following [ISPASS 2020](https://ispass.org/ispass2020/) paper: 
+EPIC-Bench extends [SAGA-Bench](https://github.com/abasak24/SAGA-Bench) to support scalable evaluation of dynamic-graph workloads across three main dimensions:
 
-> **A. Basak, J. Lin, R. Lorica, X. Xie, Z. Chishti, A. Alameldeen, and Y. Xie, *SAGA-Bench: Software and Hardware Characterization of Streaming Graph Analytics Workloads***
+- **Compute model:** incremental computation and recomputation from scratch
+- **Batch size:** configurable dynamic-update sizes
+- **Graph data structure:** serial-update, concurrent-update, and batch-parallel data structures
 
-**SAGA-Bench** is a C++ benchmark for **S**tre**A**ming **G**raph **A**nalytics containing a collection of data structures and compute models on the same platform for a fair and systematic study. SAGA-Bench simultaneously provides 1) a common platform for performance analysis studies of software techniques and 2) a benchmark for architecture studies. SAGA-Bench implements runtime profiling, as well as hardware analysis via [Intel Processor Counter Monitor (PCM)](https://github.com/opcm/pcm).
+EPIC-Bench adds parallel graph ingestion using PIGO, in-memory preprocessing and batch generation, configurable base-graph construction, and support for batch-parallel data structures such as CPAM.
 
-## Components of SAGA-Bench
-Please refer to the paper for a detailed description of each component. 
-1. **Data Structures**: 
-     + Adjacency List (shared style multithreading)
-     + Adjacency List (chunked style multithreading)
-     + Stinger 
-     + Degree-Aware Hashing
-     + absl::btree_set
-2. **Compute Models**:
-     + Recomputation from scratch
-     + Incremental
-3. **Algorithms** (each algorithm has been implemented in both the aforementioned compute models): 
-     + Breadth-First Search (BFS)
-     + Single-Source Shortest Paths (SSSP)
-     + PageRank (PR)
-     + Connected Components (CC)
-     + Single-Source Widest Paths (SSWP)
-     + Max Computation (MC)
+The implementation used for the EPIC-Bench experiments is maintained on the:
 
-## Overview of the Directory Structure 
-1. **src/dynamic**: Core implementations of the benchmark. They include the following:
-    + `frontEnd.cc` is the main/top file which reads command-line parameters, reads edge batches from the input file, initiates the data structure, and launches the scheduler thread. 
-    + `builder.cc` contains the function `dequeAndInsertEdge()` which is executed by the scheduler thread. This function updates the data structure and performs an algorithm on it.
-    + *Data structures*: `abstract_data_struc.h` is the top-level abstract class for a data structure. Specific implementations are contained in files `adListShared.h`, `adListCunked.h`, `stinger.h/stinger.cc`, `darhh.h`, and `abslBtreeSet.h`. Each file implements the specific fashion in which the *update* operation needs to be performed on the given data structure.
-    + *Graph Traversal*: `traversal.h` implements how each data structure needs to be traversed to get the in-neighbors and the out-neighbors. Traversal operation is achieved with two API functions: `in_neigh()` and `out_neigh()`. The specific traversal mechanism details of each data structure must be hidden under these two API functions. 
-    + *Compute Models and Algorithms*: `topAlg.h` is the top-level algorithm file where every algorithm is registered. The specific implementation of each algorithm is contained in a file starting with *dyn_* (e.g., `dyn_bfs.h`). Each file implements both the compute models for a specific algorithm. For example, `dyn_bfs.h` contains functions `dynBFSAlg()` for the *incremental* compute model and `BFSStartFromScratch()` for the *recomputation from scratch* compute model. Most of the *recomputation from scratch* implementations have been borrowed from [GAP Benchmark Suite](https://github.com/sbeamer/gapbs) with slight modifications to conform to the API of SAGA-Bench. 
-2. **src/common**: Some utility elements borrowed from [GAP Benchmark Suite](https://github.com/sbeamer/gapbs).
-3. **inputResource**: Several resources to produce input dataset file formats (see below).
-4. **pcmResource**: Several resources to integrate [Intel PCM](https://github.com/opcm/pcm) with SAGA-Bench for hardware-level characterization (see below).
-5. Others: `profile.sh` and `runme.sh` are example scripts to run experiments. `test.csv` is an example of the input dataset format. 
+**`development_with_PIGO` branch**
 
-## Input Datasets
-We used *.csv* file format and the example of a typical dataset is provided in `test.csv`. Each line of the file means the following:
-```
-[source vertex ID], [destination vertex ID], [timestamp], [weight]
-```
-Graph datasets are first randomly shuffled to break any ordering in the input files. This is done to ensure the realistic scenario that streaming edges are not likely to come in any pre-defined order. The shuffled input file is then read in batches of 500K edges in our evaluation setup. Please refer to the paper to check which datasets we used for our evaluation. The resources for preparing the input datasets are provided in the folder **inputResource**. `inputResource/shuffle.sh` can be used to shuffle a dataset file in .txt format (e.g., those found in [SNAP](https://snap.stanford.edu/data/)). After shuffling, timestamps and weights can be added using `inputResource/addWeightAndTime.sh` and `inputResource/appendValues.py`, which will result in the final *.csv* format.
+Repository:
 
-Note: To use other file formats, please change the file `src/dynamic/fileReader.h` to modify how SAGA-Bench should read the input file (i.e., change the function `convertCSVLineIntoEdge()`). 
+https://github.com/Mennatallah-Samier-Hassan-Mohamed-Saleh/SAGA-Bench
 
-## Compiling and Running SAGA-Bench 
-### Basic Instructions for Running the Software
-*Note: These basic instructions are for running SAGA-Bench software only and are NOT sufficient for integrating PCM for hardware characterization. For instructions to integrate PCM, please see below.*
 
-SAGA-Bench is implemented in C++11 and the build system uses GNU Make. It uses both OPENMP and std::thread to launch software threads. It has been tested on Ubuntu 18.04 LTS, Ubuntu 16.04 LTS, and CentOS. The experiments for our paper have been run on Intel Xeon Gold 6142 (Skylake) server (please refer to Section IV.A of the paper for more details). 
+## Building EPIC-Bench
 
-1. git clone https://github.com/abasak24/SAGA-Bench.git
-2. git submodule update --init --recursive
-3. cd SAGA-Bench
-4. mkdir bin obj
-5. make 
+Clone the repository and switch to the EPIC-Bench branch:
 
-An executable `frontEnd` will be created. `frontEnd` should be run with the following parameters. `./frontEnd -help` also provides this information.
-
-```
-Printing help
-Arguments:  -f filename -b batchSize -i initial batchSize -w weighted -d directed -s dataStructure -n numNodes -a algorithm -t number of threads
-First four arguments required
--f filename       	should end in .csv
--b batchSize      	suggestion = 100K
--i initial batchSize    initial batch size (optional for scalability tests)
--w weighted       	0=unweighted   1=weighted
--d directed       	0=undirected   1=directed
--s dataStructure  	data structure to use (default: adList)
--n nodes       	  	max number of nodes  to initialize with
--a algorithm       	algorithm to run (default: traverse)
--t number of threads    (default: 16)
-  DATA STRUCTURE OPTIONS:
-               	1) adList (single-threaded) 
-               	2) adListShared (multihtreaded shared style) 
-               	3) adListChunked (multithreaded chunk style) 
-               	4) degAwareRHH (multithreaded chunk style) 
-               	5) stinger (multihtreaded shared style)
-                6) abslBtreeSet (single-threaded)
-                7) abslBtreeSetShared (multihtreaded shared style)
-  ALGORITHM OPTIONS: 
-               	1) traverse
-               	2) prfromscratch
-               	3) prdyn
-               	4) ccfromscratch
-               	5) ccdyn
-               	6) mcfromscratch
-               	7) mcdyn 
-               	8) bfsfromscratch
-               	9) bfspdyn
-               	10) ssspfromscratch
-               	11) ssspdyn
-               	12) sswpfromscratch
-               	13) sswpdyn
-
+```bash
+git clone https://github.com/Mennatallah-Samier-Hassan-Mohamed-Saleh/SAGA-Bench.git
+cd SAGA-Bench
+git checkout development_with_PIGO
+git submodule update --init --recursive
+./scripts/build.sh
 ```
 
-`runme.sh` provides example command lines for running experiments. 
-Each run generates two csv files: **Alg.csv** and **Update.csv**. These files contain per-batch compute and update times, respectively, in seconds. Below is a reference standard output of running the provided mock dataset `test.csv` on incremental Pagerank algorithm and stinger data structure (see the command line in `runme.sh`):
+A successful build produces the executable:
 
-```
-Algorithm: prdyn
-Data type: stinger
-Updated Batch: 0
-Running dynamic PR
-Updated Batch: 1
-Running dynamic PR
-Updated Batch: 2
-Running dynamic PR
-  Actual numNodes: 37 numNodes initialized with: 40 numEdges: 60 weighted: 1 directed: 1
+```text
+./frontEnd
 ```
 
-### Reproducing Software-Level Characterization Results in the SAGA-Bench Paper
-Please refer to Section IV.B of the paper for a detailed description of our methodology. We turned off the Turbo Boost feature. `profile.sh` is the script we used for producing all the software-level characterization results in the paper. The script uses *OMP_PROC_BIND* and *OMP_PLACES* for pinning OPENMP-generated software threads to hardware threads. To bind std::thread-generated software threads to hardware threads, we use *pthread_setaffinity_np* (please see `src/dynamic/frontEnd.cc`, `src/dynamic/adListChunked.h`, and `src/dynamic/darhh.h`).
+in the repository root.
 
-### Reproducing Hardware-Level Characterization Results in the SAGA-Bench Paper
-We used Intel Processor Counter Monitor (PCM) for memory bandwidth, QPI bandwidth, and cache hit ratio/MPKI measurements. Please download, install, and compile PCM from here: https://github.com/opcm/pcm. Several resources for integrating PCM into SAGA-Bench have been provided in the folder **pcmResource**. First, it is necessary to change the *Makefile* of SAGA-Bench to link with PCM. We have provided an example *Makefile* in `pcmResource/Makefile_example`. Please change `PCM_DIR` in the example Makefile to the directory where you have installed your PCM. 
-`pcmResource/pcmBasic.h` contains code to measure L2/L3 MPKI, hit ratios, and QPI link utilizations. Please check the comments in `pcmResource/pcmBasic.h` to understand the output format/order. 
-`pcmResource/pcmMemory.h` contains code to measure memory bandwidth. Please check the comments and the functions `display_bandwidth_alg()` and `display_bandwidth_update()` in `pcmResource/pcmMemory.h` to understand the output format/order.  
 
-Please read `pcmResource/PCM.txt` to understand how to include `pcmResource/pcmBasic.h` or `pcmResource/pcmMemory.h` into SAGA-Bench's *update* or *compute* phases to measure the hardware counters. `pcmResource/PCM.txt` also provides the intiliatization and finalization code that must be included before and after the test code. Execution with PCM will produce *.csv* files for the *update* and *compute* phases with the corresponding hardware-level measurements.
+## Requirements
 
-For example, to measure the memory bandwidth utilization details of the *update* phase, please do the following:
-   + include `pcmResource/pcmMemory.h` in `src/dynamic/builder.cc` 
-   + include the memory-measurement related initialization and finalization code provided in `pcmResource/PCM.txt` before and after `ds->update(el)` in `src/dynamic/builder.cc` (just where the timers are currently started and stopped). In the intitialization code, please assign *true* to the boolean variable *update*.
+EPIC-Bench is implemented in C++17 and uses shared-memory parallelism.
 
-Similarly, to measure the memory bandwidth utilization details of the *compute* phase (when let's say running *incremental pagerank*), please do the following:
-   + include `pcmResource/pcmMemory.h` in `src/dynamic/dyn_pr.h` 
-   + include the memory-measurement related initialization and finalization code provided in `pcmResource/PCM.txt` in the function `dynPRAlg()` before and after the algorithm implementation (just where the timers are currently started and stopped). In the intitialization code, please assign *false* to the boolean variable *update*.
+The paper experiments use:
 
-## Including Other Software Techniques in SAGA-Bench 
-These are some guidelines to include one's own data structure or compute model in SAGA-Bench. 
-1. *Including a new data structure*: Any new data structure must be inherited from the class `dataStruc` in `src/dynamic/abstract_data_struc.h`. The most important function to implement for a new data structure is `update()` which defines the mechanism to update a batch of edges into the data structure. Next, it is essential to implement the traversal mechanism of the data structure in the file `src/dynamic/traversal.h`.
-2. *Including a new compute model*: It is possible to introduce a new compute model for any algorithm (let's say BFS) by writing a new function in the algorithm's file (`src/dynamic/dyn_bfs.h` for BFS). For example, `src/dynamic/dyn_bfs.h` currently contains functions `dynBFSAlg()` and `BFSStartFromScratch()` for incremental and non-incremental compute models. Next, the new function much be registered in the class `Algorithm` in `src/dynamic/topAlg.h`.
+- GCC 9.2.0
+- C++17
+- OpenMP
+- ParlayLib
+- PIGO
+- 128 CPU cores on a single compute node
 
-## Contact
-In case of issues, please contact Abanti at abasak@ucsb.edu. You could also raise an issue in Github so that the response can help other users. 
+The repository uses Git submodules. Make sure to run:
+
+```bash
+git submodule update --init --recursive
+```
+
+before building.
+
+
+## Repository Structure
+
+The main directories relevant to EPIC-Bench are:
+
+```text
+SAGA-Bench/
+├── src/
+│   ├── dynamic/        Core benchmark, algorithms, and data structures
+│   └── common/         Shared utility code
+├── scripts/            Build, graph-generation, and experiment scripts
+├── inputResource/      Legacy SAGA-Bench input-processing utilities
+├── pcmResource/        Legacy SAGA-Bench Intel PCM utilities
+└── frontEnd            Benchmark executable after compilation
+```
+
+### `src/dynamic`
+
+The main EPIC-Bench implementation is under `src/dynamic`.
+
+Important files include:
+
+- `frontEnd.cc` — graph loading, preprocessing, deterministic shuffling, batch generation, graph updates, and algorithm execution
+- `parser.cc` / `parser.h` — command-line parsing and help
+- `topDataStruc.h` — registration and creation of graph data structures
+- `topAlg.h` — registration of graph algorithms
+- data-structure implementation files — adjacency-list, STINGER, Abseil B-tree, CPAM, and other inherited SAGA-Bench structures
+
+EPIC-Bench uses PIGO to load the input graph and converts the resulting graph representation into an in-memory edge list. The edge list is deterministically shuffled before being divided into the base graph and dynamic-update batches.
+
+
+## Scripts
+
+Build, graph-generation, and experiment utilities are available in:
+
+https://github.com/Mennatallah-Samier-Hassan-Mohamed-Saleh/SAGA-Bench/tree/development_with_PIGO/scripts
+
+The main build command is:
+
+```bash
+./scripts/build.sh
+```
+
+The repository also contains the RMAT graph generator used for the paper experiments:
+
+```bash
+python3 scripts/rmat_generator.py <output_file>
+```
+
+See the `scripts/` directory for additional experiment and utility scripts.
+
+
+## Supported Data Structures
+
+Run:
+
+```bash
+./frontEnd -help
+```
+
+for the authoritative list supported by the current build.
+
+The current EPIC-Bench branch includes:
+
+| Command-line name | Description |
+|---|---|
+| `adList` | Single-threaded adjacency list |
+| `adListShared` | Multithreaded shared adjacency list |
+| `adListChunked` | Multithreaded chunked adjacency list |
+| `degAwareRHH` | Multithreaded degree-aware structure |
+| `stinger` | Multithreaded STINGER |
+| `abslBtreeSet` | Single-threaded Abseil B-tree |
+| `abslBtreeSetShared` | Multithreaded shared Abseil B-tree |
+| `cpamSet` | Single-threaded CPAM |
+| `cpamSetShared` | Batch-parallel CPAM |
+
+The EPIC-Bench paper focuses on four representative structures:
+
+- Shared adjacency list
+- STINGER
+- Abseil B-tree
+- CPAM
+
+
+## Supported Algorithms
+
+Each evaluated graph algorithm has incremental and from-scratch variants.
+
+| Algorithm | From scratch | Incremental |
+|---|---|---|
+| PageRank (PR) | `prfromscratch` | `prdyn` |
+| Connected Components (CC) | `ccfromscratch` | `ccdyn` |
+| Max Computation (MC) | `mcfromscratch` | `mcdyn` |
+| Breadth-First Search (BFS) | `bfsfromscratch` | `bfsdyn` |
+| Single-Source Shortest Path (SSSP) | `ssspfromscratch` | `ssspdyn` |
+| Single-Source Widest Path (SSWP) | `sswpfromscratch` | `sswpdyn` |
+
+The benchmark also provides:
+
+```text
+traverse
+```
+
+
+## Command-Line Interface
+
+Display the current command-line interface with:
+
+```bash
+./frontEnd -help
+```
+
+Basic usage:
+
+```text
+./frontEnd -f <file> -b <batch-size> -w <0|1> -d <0|1> [options]
+```
+
+### Required Options
+
+| Option | Description |
+|---|---|
+| `-f <file>` | Input graph file |
+| `-b <size>` | Dynamic batch size |
+| `-w <0\|1>` | `0` = unweighted, `1` = weighted |
+| `-d <0\|1>` | `0` = undirected, `1` = directed |
+
+### Optional Options
+
+| Option | Description |
+|---|---|
+| `-s <structure>` | Graph data structure (default: `adList`) |
+| `-a <algorithm>` | Graph algorithm (default: `traverse`) |
+| `-t <threads>` | Number of threads (default: 16) |
+| `-n <vertices>` | Maximum number of vertices |
+| `-i <edges>` | Initial/base-graph size |
+| `-r <vertex>` | Fixed source vertex for BFS, SSSP, and SSWP |
+| `-l <weight>` | Minimum random edge weight (default: 2) |
+| `-u <weight>` | Maximum random edge weight (default: 2) |
+| `-v <0\|1>` | Print algorithm output: `0` = no, `1` = yes |
+| `-h` | Display help |
+
+
+## Base Graph and Dynamic Batches
+
+EPIC-Bench separates base-graph construction from subsequent dynamic updates.
+
+Let:
+
+- `m` = total number of graph edges
+- `k` = number of dynamic batches
+- `b` = number of edges per dynamic batch
+- `i` = initial/base-graph size
+
+The initial graph size is calculated as:
+
+```text
+i = m - (k * b)
+```
+
+The value `i` is passed through:
+
+```text
+-i <edges>
+```
+
+while the dynamic batch size is passed through:
+
+```text
+-b <edges>
+```
+
+The experiments reported in the EPIC-Bench paper use:
+
+```text
+k = 10
+```
+
+dynamic batches.
+
+For example, the Twitter graph used in the paper contains:
+
+```text
+m = 2,405,026,092 edges
+```
+
+For a dynamic batch size of:
+
+```text
+b = 100,000
+```
+
+the initial graph size is:
+
+```text
+i = 2,405,026,092 - (10 * 100,000)
+  = 2,404,026,092
+```
+
+
+## Example: Twitter BFS with CPAM
+
+Incremental BFS on Twitter using CPAM, 128 threads, and dynamic batches of 100,000 edges can be launched as:
+
+```bash
+./frontEnd \
+  -d 0 \
+  -w 0 \
+  -f <tw.txt> \
+  -b 100000 \
+  -s cpamSetShared \
+  -a bfsdyn \
+  -t 128 \
+  -n 61578415 \
+  -i 2404026092 \
+  -r 36501842
+```
+
+Here:
+
+- `-d 0` specifies an undirected graph
+- `-w 0` specifies an unweighted graph
+- `-b 100000` sets the dynamic batch size
+- `-i 2404026092` constructs the mostly-full base graph
+- `-r 36501842` fixes the BFS source vertex
+- `-t 128` uses 128 threads
+
+
+## Datasets
+
+The EPIC-Bench paper evaluates the following graphs:
+
+| Dataset | Type | Vertices | Edges |
+|---|---|---:|---:|
+| LiveJournal | Directed | 4,847,571 | 68,993,773 |
+| Com-Orkut | Undirected | 3,072,441 | 117,185,083 |
+| RMAT | Directed | 32,118,308 | 500,000,000 |
+| Erdős–Rényi | Undirected | 10,000,000 | 1,000,009,380 |
+| Twitter | Undirected | 61,578,415 | 2,405,026,092 |
+
+### LiveJournal and Com-Orkut
+
+LiveJournal and Com-Orkut are available from the Stanford Large Network Dataset Collection (SNAP):
+
+https://snap.stanford.edu/data/
+
+### Erdős–Rényi and Twitter
+
+The ER and Twitter graphs used in the paper experiments are available from the dataset repository:
+
+https://www.dropbox.com/scl/fo/dqf7inwxprea4pr4rc191/AC17NzPUkFQuaDdOGGoOC1U?rlkey=3lsfu7a49di6qbgey5f2msjh2&dl=0
+
+### RMAT
+
+The RMAT graph is generated using SNAP with:
+
+```text
+N = 2^25 requested vertices
+M = 500,000,000 edges
+a = 0.5
+b = 0.1
+c = 0.1
+d = 0.3
+```
+
+Generate it with:
+
+```bash
+python3 scripts/rmat_generator.py <output_file>
+```
+
+The number of vertices present in the resulting edge list may be smaller than the requested `N`; the paper reports the graph size observed by the benchmark after loading the generated graph.
+
+
+## Fixed Source Vertices
+
+Source-based algorithms use `-r` to keep the source vertex fixed across preprocessing and shuffling implementations.
+
+The paper experiments use:
+
+| Dataset | Source vertex |
+|---|---:|
+| LiveJournal | `967794` |
+| Com-Orkut | `614044` |
+| RMAT | `6406224` |
+| Erdős–Rényi | `2001011` |
+| Twitter | `36501842` |
+
+Use these values for BFS, SSSP, and SSWP when reproducing the paper experiments.
+
+
+## Weighted Algorithms
+
+SSSP and SSWP require weighted graphs.
+
+Use:
+
+```text
+-w 1
+```
+
+for these algorithms.
+
+Random edge weights are generated using the configured minimum and maximum weights:
+
+```text
+-l <weight>
+-u <weight>
+```
+
+The default values are:
+
+```text
+-l 2
+-u 2
+```
+
+Other algorithms in the paper are run as unweighted workloads with:
+
+```text
+-w 0
+```
+
+
+## Output
+
+Each experiment produces two CSV files:
+
+- **`Update.csv`** — per-batch graph-update times, in seconds.
+- **`Alg.csv`** — per-batch algorithm compute times, in seconds.
+
+For an experiment with 10 dynamic batches, these files contain the timing measurements used to calculate the steady-state update and compute results reported in the paper.
+
+The benchmark also prints execution information to standard output, including graph loading, edge-list conversion, deterministic shuffling, batch updates, algorithm execution, and the total number of batches processed.
+
+Timing results are appended to the CSV files. Move, rename, or remove existing `Update.csv` and `Alg.csv` files before starting a new experiment set if separate output files are desired.
+
+
+## Reproducing the EPIC-Bench Paper Experiments
+
+The paper experiments use:
+
+```text
+Dynamic batches: 10
+Batch sizes:     10^0, 10^1, 10^2, 10^3, 10^4, 10^5, 10^6 edges
+Threads:         128
+Runs:            3 per configuration
+```
+
+For every batch size `b`, calculate:
+
+```text
+i = m - (10 * b)
+```
+
+and pass the result through `-i`.
+
+For each configuration, EPIC-Bench:
+
+1. loads the graph using PIGO,
+2. converts the graph to an in-memory edge list,
+3. deterministically shuffles the edges,
+4. constructs the base graph from the first `i` edges,
+5. applies the remaining edges as dynamic batches, and
+6. runs the selected algorithm after each update.
+
+The reported paper timings are averages over three runs. Update and compute times are averaged over the ten dynamic batches using `Update.csv` and `Alg.csv`, respectively.
+
+Use the fixed source vertices listed above for BFS, SSSP, and SSWP.
+
+
+## Experiment Configuration Summary
+
+The graph-direction values used in the paper are:
+
+| Dataset | `-d` |
+|---|---:|
+| LiveJournal | `1` |
+| Com-Orkut | `0` |
+| RMAT | `1` |
+| Erdős–Rényi | `0` |
+| Twitter | `0` |
+
+where:
+
+```text
+-d 0 = undirected
+-d 1 = directed
+```
+
+For BFS, CC, PR, and MC:
+
+```text
+-w 0
+```
+
+For SSSP and SSWP:
+
+```text
+-w 1
+```
+
+The paper experiments use:
+
+```text
+-t 128
+```
+
+
+## Original SAGA-Bench
+
+EPIC-Bench builds on the original SAGA-Bench benchmark:
+
+> A. Basak, J. Lin, R. Lorica, X. Xie, Z. Chishti, A. Alameldeen, and Y. Xie,  
+> **“SAGA-Bench: Software and Hardware Characterization of Streaming Graph Analytics Workloads,”**  
+> IEEE ISPASS, 2020.
+
+Original repository:
+
+https://github.com/abasak24/SAGA-Bench
+
+The original SAGA-Bench repository contains additional information about its producer/consumer ingestion pipeline and Intel PCM hardware-characterization infrastructure.
+
+Those instructions describe the original SAGA-Bench workflow and should not be confused with the PIGO-based EPIC-Bench pipeline in the `development_with_PIGO` branch.
+
+
+## Citation
+
+If you use EPIC-Bench, please cite the EPIC-Bench paper.
+
+<!-- Add the final EPIC-Bench BibTeX entry here once publication metadata is available. -->
+
+The original SAGA-Bench work should also be cited when appropriate.
+
+
+## Issues and Contributions
+
+For bugs, reproduction questions, or feature requests, please open a GitHub issue:
+
+https://github.com/Mennatallah-Samier-Hassan-Mohamed-Saleh/SAGA-Bench/issues
+
+Contributions that add new graph data structures, algorithms, datasets, or experiment configurations are welcome.
